@@ -82,4 +82,5 @@ or send a pull request.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+AINexLayer License (proprietary) — see [LICENSE](LICENSE).
+Not open source; limited grants for AIAgentLayer users and publishers.

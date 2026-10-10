@@ -1,21 +1,76 @@
-MIT License
-
+AINexLayer License
 Copyright (c) 2026 AINexLayer
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All rights reserved.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This repository (the "Registry"), including its tooling, documentation,
+compiled index, and AINexLayer-authored sample packages, is owned by
+AINexLayer. It is not released under the MIT License or any other
+open-source license.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. Limited grant — AIAgentLayer users
+
+   Subject to this License, AINexLayer grants you a personal,
+   non-exclusive, non-transferable, revocable right to:
+   (a) fetch and use the published Registry feed (including index.json)
+       with AIAgentLayer;
+   (b) install community packages listed by the Registry for use with
+       AIAgentLayer on machines you control.
+
+2. Limited grant — publishers
+
+   Subject to this License, you may submit packages to this Registry
+   (pull request, issue form, or other intake AINexLayer enables) for
+   listing in the feed. You retain ownership of your submission. By
+   submitting, you grant AINexLayer a worldwide, royalty-free license to
+   host, reproduce, modify for indexing, and redistribute your
+   submission through the Registry and AIAgentLayer. You must have the
+   right to grant that license, and your submission must not include
+   secrets or material you are not allowed to publish.
+
+3. Restrictions
+
+   Except as expressly granted above, you may not:
+   (a) copy, modify, distribute, sublicense, sell, or host the Registry
+       software, scripts, workflows, or branding;
+   (b) operate a competing public marketplace that is a substantial
+       copy of this Registry's structure or feed without written
+       permission from AINexLayer;
+   (c) remove or alter copyright, trademark, or attribution notices;
+   (d) use AINexLayer or AIAgentLayer names or marks in a way that
+       implies endorsement without permission.
+
+4. Packages from third parties
+
+   Community packages may carry their own license terms in the package
+   files. Those terms govern the package contents. This License governs
+   the Registry itself and AINexLayer's rights to list and distribute
+   packages through it.
+
+5. Trademarks
+
+   "AINexLayer", "AIAgentLayer", and related marks are trademarks of
+   AINexLayer. This License does not grant trademark rights.
+
+6. No warranty
+
+   THE REGISTRY IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+   NON-INFRINGEMENT. AINEXLAYER IS NOT LIABLE FOR ANY CLAIM, DAMAGES,
+   OR OTHER LIABILITY ARISING FROM USE OF THE REGISTRY OR ANY PACKAGE
+   LISTED IN IT.
+
+7. Termination
+
+   This License terminates automatically if you breach it. On
+   termination you must stop using Registry tooling and feeds obtained
+   under this License, except that installed packages already on your
+   machines may remain subject to their own package licenses.
+
+8. Governing law
+
+   This License is governed by the laws applicable to AINexLayer's
+   principal place of business, without regard to conflict-of-law rules.
+
+For permission beyond this License, contact AINexLayer.
