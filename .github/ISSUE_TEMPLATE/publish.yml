@@ -1,0 +1,34 @@
+name: Publish package
+description: Submit a skill, plugin, or agent template to the AINexLayer marketplace
+title: "[publish] "
+labels: ["publish"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - skill
+        - plugin
+        - agent
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Package name
+      description: Lowercase slug (a-z, 0-9, dots, hyphens). Must match the directory name.
+      placeholder: hello-ainexlayer
+    validations:
+      required: true
+  - type: textarea
+    id: payload
+    attributes:
+      label: Package payload
+      description: Paste the SKILL.md, plugin.json (+ mcp.json), or agent.json contents.
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Prefer a pull request that adds `skills/<name>/SKILL.md` (or `plugins/<name>/`) and runs `python scripts/compile_index.py`. This issue form is the fallback when the app cannot open a PR.

@@ -1,0 +1,28 @@
+name: Registry CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate packages
+        run: python scripts/validate.py
+      - name: Compile index
+        run: python scripts/compile_index.py
+      - name: Index must be committed when packages change
+        run: |
+          python scripts/compile_index.py
+          git diff --exit-code docs/index.json \
+            || (echo "docs/index.json is stale — run python scripts/compile_index.py and commit" && exit 1)

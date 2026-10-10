@@ -1,0 +1,21 @@
+{
+  "revision": 991113,
+  "generated_at": "2026-10-10T04:11:16Z",
+  "plugins": [],
+  "skills": [
+    {
+      "name": "hello-ainexlayer",
+      "title": "Hello Ainexlayer",
+      "description": "Sample AINexLayer marketplace skill — replies with a short greeting pattern for demos.",
+      "publisher": "revanth-ainl",
+      "version": "1.0.0",
+      "published_at": "2026-10-10T04:11:16Z",
+      "categories": [],
+      "source_url": "https://github.com/revanth-ainl/ainexlayer-marketplace/tree/main/skills/hello-ainexlayer",
+      "raw_url": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/skills/hello-ainexlayer/SKILL.md",
+      "flavor": "portable",
+      "compatible_agents": []
+    }
+  ],
+  "agents": []
+}
