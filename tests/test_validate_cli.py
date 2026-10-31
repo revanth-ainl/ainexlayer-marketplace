@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -100,6 +101,92 @@ class ValidateTreeTest(unittest.TestCase):
         self.assertEqual(quiet(validate.main, ["--root", str(self.root)]), 0)
         (self.root / "registry.json").write_text("{", encoding="utf-8")
         self.assertEqual(quiet(validate.main, ["--root", str(self.root)]), 1)
+
+
+    def test_registry_version_must_match_the_package(self) -> None:
+        self.registry["owners"]["hello-ainexlayer"]["version"] = "1.0.1"
+        self.save_registry()
+        self.assertTrue(any("record the published version" in m for m in self.errors()))
+
+    def test_unknown_owner_field_is_refused(self) -> None:
+        self.registry["owners"]["hello-ainexlayer"]["owner_email"] = "x@example.com"
+        self.save_registry()
+        self.assertTrue(any("unknown fields" in m for m in self.errors()))
+
+    def test_format_1_registry_still_validates(self) -> None:
+        owner = self.registry["owners"]["hello-ainexlayer"]
+        del owner["version"], owner["publisher_id"]
+        self.registry["version"] = 1
+        self.save_registry()
+        self.assertEqual(self.errors(), [])
+
+    def test_trusted_publishers_file_shape(self) -> None:
+        shutil.copy(ROOT / "trusted-publishers.json", self.root / "trusted-publishers.json")
+        self.assertEqual(self.errors(), [])
+        (self.root / "trusted-publishers.json").write_text('{"version": 1, "publishers": [{"login": "x"}]}')
+        self.assertTrue(any("trusted-publishers.json" in m for m in self.errors()))
+
+
+def git(root: Path, *args: str) -> None:
+    subprocess.run(
+        ["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false", *args],
+        check=True,
+        capture_output=True,
+    )
+
+
+class BaseRefTest(unittest.TestCase):
+    """--base-ref: ownership, version increase and content-change rules against a commit."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        for rel in ("skills", "docs"):
+            shutil.copytree(ROOT / rel, self.root / rel)
+        for rel in ("registry.json", "trusted-publishers.json"):
+            shutil.copy(ROOT / rel, self.root / rel)
+        git(self.root, "init", "-q")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "base")
+        self.skill = self.root / "skills" / "hello-ainexlayer" / "SKILL.md"
+        self.registry = json.loads((self.root / "registry.json").read_text(encoding="utf-8"))
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def errors(self) -> list:
+        return [e.message for e in validate.validate_tree(self.root, "HEAD") if e.is_error]
+
+    def set_version(self, version: str) -> None:
+        text = re.sub(r"(?m)^version: .*$", f"version: {version}", self.skill.read_text(encoding="utf-8"))
+        self.skill.write_text(text, encoding="utf-8")
+        self.registry["owners"]["hello-ainexlayer"]["version"] = version
+        (self.root / "registry.json").write_text(json.dumps(self.registry), encoding="utf-8")
+
+    def test_unchanged_tree_passes(self) -> None:
+        self.assertEqual(self.errors(), [])
+
+    def test_unknown_ref_is_refused(self) -> None:
+        messages = [e.message for e in validate.validate_tree(self.root, "no-such-ref") if e.is_error]
+        self.assertTrue(any("is not a commit" in m for m in messages))
+
+    def test_content_change_needs_a_new_version(self) -> None:
+        with self.skill.open("a", encoding="utf-8") as fh:
+            fh.write("\nOne more line.\n")
+        self.assertTrue(any("content changed" in m for m in self.errors()))
+        self.set_version("1.0.1")
+        self.assertEqual(self.errors(), [])
+
+    def test_downgrade_is_refused(self) -> None:
+        self.set_version("1.1.0")
+        git(self.root, "commit", "-q", "-am", "1.1.0")
+        self.set_version("1.0.5")
+        self.assertTrue(any("versions only go up" in m for m in self.errors()))
+
+    def test_owner_takeover_is_refused(self) -> None:
+        self.registry["owners"]["hello-ainexlayer"].update(publisher="someone-else", publisher_id=99)
+        (self.root / "registry.json").write_text(json.dumps(self.registry), encoding="utf-8")
+        self.assertTrue(any("belongs to GitHub account 340421019" in m for m in self.errors()))
 
 
 class SubmissionFileTest(unittest.TestCase):

@@ -3,8 +3,8 @@
 
 Run by hand from the repository root before committing:
 
-    python3 scripts/validate.py                      # every package + registry.json
-    python3 scripts/validate.py --base-ref origin/main   # also ownership and version rules
+    python3 scripts/validate.py                      # every package, registry.json, trusted-publishers.json
+    python3 scripts/validate.py --base-ref origin/main   # also ownership, version and content-change rules
     python3 scripts/validate.py --submission FILE    # one submission JSON, or an issue body
 
 Exit status is 1 when anything is refused. Warnings are printed and do not
@@ -23,7 +23,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ainexlayer_marketplace import security, submission
+from ainexlayer_marketplace import hashing, security, submission
+from ainexlayer_marketplace import registry as registry_rules
 from ainexlayer_marketplace.rules import GITHUB_LOGIN_RE, KINDS, FieldError, warning
 
 KIND_DIRS = {"skill": "skills", "plugin": "plugins", "agent": "agents"}
@@ -113,7 +114,41 @@ def check_owners(registry: dict[str, Any], packages: list[tuple]) -> list[FieldE
             errors.append(FieldError(f"{where}.publisher_id must be a positive integer", "registry.json"))
         if name not in names:
             errors.append(warning(f"{where} has no package folder (delisted?)", "registry.json"))
+        errors.extend(registry_rules.check_owner_entry(name, owner))
     return errors
+
+
+def check_owner_versions(registry: dict[str, Any], docs: dict[tuple, dict[str, Any]]) -> list[FieldError]:
+    """The version recorded for each owner is the version in its package folder."""
+    errors: list[FieldError] = []
+    owners = registry.get("owners", {})
+    for (kind, name), doc in sorted(docs.items()):
+        owner = owners.get(name)
+        if not isinstance(owner, dict) or owner.get("kind") != kind:
+            continue  # reported by check_owners
+        where = f"registry.json owners.{name}"
+        if "version" not in owner:
+            errors.append(warning(f"{where} has no version (registry format 1)", "registry.json"))
+        elif owner.get("version") != doc.get("version"):
+            errors.append(
+                FieldError(
+                    f"{where}.version is {owner.get('version')!r} but {KIND_DIRS[kind]}/{name} is "
+                    f"{doc.get('version')!r}; record the published version",
+                    "registry.json",
+                )
+            )
+    return errors
+
+
+def check_trusted_file(root: Path) -> list[FieldError]:
+    path = root / "trusted-publishers.json"
+    if not path.is_file():
+        return [warning("trusted-publishers.json is missing; every package is listed as community", None)]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return [FieldError(f"trusted-publishers.json is not valid JSON ({exc})", "trusted-publishers.json")]
+    return registry_rules.check_trusted(data)
 
 
 def _git_show(root: Path, ref: str, rel: str) -> str | None:
@@ -129,11 +164,8 @@ def _git_show(root: Path, ref: str, rel: str) -> str | None:
 def check_against_base(
     root: Path, ref: str, registry: dict[str, Any], docs: dict[tuple, dict[str, Any]]
 ) -> list[FieldError]:
-    """Ownership and version rules against ``ref`` (registry.check_claim)."""
-    try:
-        from ainexlayer_marketplace import registry as registry_rules
-    except ImportError:
-        return [FieldError("scripts/ainexlayer_marketplace/registry.py is missing; ownership rules cannot run", None)]
+    """Ownership and version rules against ``ref`` (registry.check_claim), and
+    no package content changed without a new version."""
     verify = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
         capture_output=True,
@@ -146,6 +178,10 @@ def check_against_base(
         base_registry = json.loads(base_text) if base_text else {"owners": {}}
     except json.JSONDecodeError:
         return [FieldError(f"registry.json at {ref} is not valid JSON", "registry.json")]
+    try:
+        trusted = registry_rules.load_trusted(root / "trusted-publishers.json")
+    except (OSError, UnicodeDecodeError, ValueError):
+        trusted = {}  # reported by check_trusted_file
     errors: list[FieldError] = []
     owners = registry.get("owners", {})
     for (kind, name), doc in sorted(docs.items()):
@@ -157,8 +193,51 @@ def check_against_base(
             doc.get("version"),
             owner.get("publisher"),
             owner.get("publisher_id"),
+            trusted=trusted,
         ):
             errors.append(FieldError(f"{KIND_DIRS[kind]}/{name}: {problem.message}", problem.field, problem.severity))
+    errors.extend(check_content_changes(root, ref, docs))
+    return errors
+
+
+def _base_feed_entries(root: Path, ref: str) -> dict[tuple, dict[str, Any]]:
+    text = _git_show(root, ref, "docs/index.json")
+    try:
+        feed = json.loads(text) if text else {}
+    except json.JSONDecodeError:
+        return {}
+    out: dict[tuple, dict[str, Any]] = {}
+    if isinstance(feed, dict):
+        for kind in KINDS:
+            for entry in feed.get(KIND_DIRS[kind]) or []:
+                if isinstance(entry, dict) and isinstance(entry.get("name"), str):
+                    out[(kind, entry["name"])] = entry
+    return out
+
+
+def check_content_changes(root: Path, ref: str, docs: dict[tuple, dict[str, Any]]) -> list[FieldError]:
+    """A package whose files changed since ``ref`` must carry a new version.
+
+    Compared with the ``content_sha256`` in the feed at ``ref``; a feed from
+    before hashes were published has none, and the check is skipped.
+    """
+    base = _base_feed_entries(root, ref)
+    errors: list[FieldError] = []
+    for (kind, name), doc in sorted(docs.items()):
+        entry = base.get((kind, name))
+        if not entry or not isinstance(entry.get("content_sha256"), str):
+            continue
+        if entry.get("version") != doc.get("version"):
+            continue
+        current = hashing.content_sha256(submission.package_dir(root, kind, name))
+        if current != entry["content_sha256"]:
+            errors.append(
+                FieldError(
+                    f"{KIND_DIRS[kind]}/{name}: content changed since {ref} but the version is still "
+                    f"{doc.get('version')}; publish a new version",
+                    "version",
+                )
+            )
     return errors
 
 
@@ -174,8 +253,10 @@ def validate_tree(root: Path, base_ref: str | None = None) -> list[FieldError]:
             pass  # already reported by check_package
     registry, registry_errors = load_registry(root)
     errors.extend(registry_errors)
+    errors.extend(check_trusted_file(root))
     if registry:
         errors.extend(check_owners(registry, packages))
+        errors.extend(check_owner_versions(registry, docs))
         if base_ref:
             errors.extend(check_against_base(root, base_ref, registry, docs))
     return errors
