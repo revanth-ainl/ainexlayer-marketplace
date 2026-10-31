@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "publishers": [
+    {
+      "login": "revanth-ainl",
+      "id": 340421019,
+      "name": "AINexLayer",
+      "trust": "official",
+      "roles": ["maintainer"],
+      "verified": {
+        "source": "https://api.github.com/users/revanth-ainl",
+        "date": "2026-10-31",
+        "note": "read-only public lookup; account owns this repository and is its CODEOWNER"
+      }
+    }
+  ]
+}
