@@ -8,12 +8,13 @@ its JSON is parsed.
 from __future__ import annotations
 
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Iterable, List, Optional, Sequence
 
 from .rules import (
     AGENT_SECRET_PATTERNS,
     GENERIC_SECRET_RE,
+    HEADER_PLACEHOLDER_RE,
     MAX_PACKAGE_FILE_BYTES,
     SECRET_PATTERNS,
     FieldError,
@@ -43,7 +44,7 @@ def scan_text(text: str, where: str, *, strict: bool = False) -> List[FieldError
                     where,
                 )
             ]
-    if not strict and GENERIC_SECRET_RE.search(text):
+    if not strict and GENERIC_SECRET_RE.search(HEADER_PLACEHOLDER_RE.sub("", text)):
         return [warning(f"{where} has something shaped like 'key = value'; make sure it is not a real credential", where)]
     return []
 
@@ -51,12 +52,9 @@ def scan_text(text: str, where: str, *, strict: bool = False) -> List[FieldError
 def is_safe_relpath(rel: str) -> bool:
     """A relative POSIX path with no ``..``, no absolute root, no backslash
     and no empty or hidden segment."""
-    if not rel or "\\" in rel or "\x00" in rel or rel.startswith("/"):
+    if not rel or "\\" in rel or "\x00" in rel:
         return False
-    parts = PurePosixPath(rel).parts
-    if not parts:
-        return False
-    return all(part not in ("", ".", "..") and not part.startswith(".") for part in parts)
+    return all(part not in ("", ".", "..") and not part.startswith(".") for part in rel.split("/"))
 
 
 def safe_join(root: Path, rel: str) -> Optional[Path]:

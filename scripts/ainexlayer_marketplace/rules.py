@@ -160,9 +160,8 @@ AUTH_MODES = frozenset(
 
 # ---------------------------------------------------------------------------
 # MCP servers
-# agent_plugins_loader.py (validate_mcp_server and its helpers) plus the two
-# local checks in publish.py._validate_mcp (exactly one server, an exact
-# version pin on every stdio package).
+# agent_plugins_loader.py (validate_mcp_server and its helpers) plus the
+# "exactly one server" check in publish.py._validate_mcp.
 # ---------------------------------------------------------------------------
 
 MCP_TRANSPORTS = ("streamable-http", "stdio")
@@ -208,8 +207,9 @@ RESERVED_ENV_NAMES = frozenset(
 ENV_PLACEHOLDER_RE = re.compile(r"^\$(?:plugin_[a-z0-9_.-]+|\{plugin_[a-z0-9_.-]+\})$")
 HEADER_PLACEHOLDER_RE = re.compile(r"\$(?:plugin_[a-z0-9_.-]+|\{plugin_[a-z0-9_.-]+\})")
 TOKEN_LITERAL_RE = re.compile(r"[A-Za-z0-9_\-]{20,}")
-#: publish.py._validate_mcp: what counts as an exact version on a stdio argv.
-STDIO_PIN_SEARCH_RES = (re.compile(r"@\d+\.\d+\.\d+"), re.compile(r":[\w.-]*\d[\w.-]*$"))
+# publish.py._validate_mcp also searches the argv for "@1.2.3" or ":<tag with
+# a digit>". The launcher rules above already require an exact pin, and that
+# search wrongly refuses `uvx pkg==1.2.3`, so it is not mirrored here.
 
 
 # ---------------------------------------------------------------------------

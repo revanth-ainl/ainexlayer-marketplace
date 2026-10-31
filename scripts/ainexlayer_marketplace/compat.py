@@ -52,7 +52,6 @@ from .rules import (
     PYPI_PIN_RE,
     RESERVED_ENV_NAMES,
     STDIO_LAUNCHERS,
-    STDIO_PIN_SEARCH_RES,
     TEMPLATE_KEYS,
     TEMPLATE_SCHEMA,
     TEMPLATE_SKILL_RE,
@@ -251,11 +250,11 @@ def _check_stdio_server(name: str, server: Mapping[str, Any]) -> List[FieldError
     if not isinstance(args, list) or not all(isinstance(a, str) for a in args):
         errors.append(FieldError(f"mcp server {name!r}: args must be a list of strings", "mcp_json"))
         args = []
+    # The launcher rules below require an exactly pinned package or image
+    # for every launcher, so no separate "is anything pinned" check is needed.
     problem = _stdio_args_problem(launcher, list(args))
     if problem:
         errors.append(FieldError(f"mcp server {name!r}: {problem}", "mcp_json"))
-    elif not any(p.search(a) for a in args for p in STDIO_PIN_SEARCH_RES):
-        errors.append(FieldError(f"mcp server {name!r}: pin an exact version (e.g. @1.2.0 or image:1.2)", "mcp_json"))
     env = server.get("env", {})
     if not isinstance(env, Mapping):
         errors.append(FieldError(f"mcp server {name!r}: env must be an object", "mcp_json"))

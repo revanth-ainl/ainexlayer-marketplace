@@ -1,0 +1,36 @@
+{
+  "kind": "agent",
+  "name": "research-buddy",
+  "version": "1.0.0",
+  "title": "Research buddy",
+  "description": "Finds sources on a topic and writes a short cited summary.",
+  "categories": [
+    "research"
+  ],
+  "agent": {
+    "schema": 1,
+    "name": "Research Buddy",
+    "title": "Research buddy",
+    "instructions": "Find three to five reliable sources on the topic you are given and write a short summary that cites each one.",
+    "tier": "specialist",
+    "effort": "medium",
+    "focus": [],
+    "grant_mode": "all",
+    "grants": [],
+    "denies": [],
+    "skills": [
+      "meeting-recap"
+    ],
+    "require_approval": [
+      "tool:send_email"
+    ],
+    "knowledge_scope": "shared",
+    "avatar": {
+      "contract": 1,
+      "base": "round",
+      "palette": {
+        "skin": "#c68642"
+      }
+    }
+  }
+}
