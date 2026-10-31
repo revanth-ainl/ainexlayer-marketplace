@@ -158,6 +158,97 @@ class PluginManifestTest(unittest.TestCase):
             manifest["extensions"][ns]["mcp_auth_header_template"] = "Bearer $plugin_error-tracker_token"
         self.assertEqual(self.check(manifest), [])
 
+    def with_auth(self, auth: dict, **extension) -> dict:
+        manifest = copy.deepcopy(self.manifest)
+        for ns in ("io.github.dodaios", "io.github.personaljarvis"):
+            manifest["extensions"][ns]["auth"] = auth
+            manifest["extensions"][ns].update(extension)
+        return manifest
+
+    def test_every_auth_mode_needs_its_fields(self) -> None:
+        # The required fields of each catalog.py auth model, with one
+        # well-formed value each; dropping any one must be refused.
+        complete = {
+            "pat_paste": {
+                "token_creation_url": "https://a.example/tokens",
+                "token_prefix": "tok_",
+                "validation_endpoint": "https://api.a.example/me",
+                "instruction_md": "Create a token.",
+            },
+            "instance_browser": {"instance_url": {"label": "Address", "placeholder": "https://ha.local"}},
+            "oauth_device_flow": {
+                "device_url": "https://a.example/device",
+                "verify_url": "https://a.example/verify",
+                "token_url": "https://a.example/token",
+                "client_id": "abc",
+                "scopes": ["read"],
+            },
+            "hosted_mcp_oauth_dcr": {
+                "discovery_url": "https://a.example/.well-known",
+                "mcp_url": "https://a.example/mcp",
+            },
+            "oauth_pkce_loopback": {
+                "authorization_url": "https://a.example/authorize",
+                "token_url": "https://a.example/token",
+                "client_id": "abc",
+                "scopes": ["read"],
+            },
+            "hosted_mcp_allowlist": {"mcp_url": "https://a.example/mcp"},
+            "local": {},
+            "hosted_mcp_open": {"mcp_url": "https://a.example/mcp"},
+        }
+        for mode, fields in complete.items():
+            with self.subTest(mode=mode):
+                self.assertEqual(self.check(self.with_auth({"mode": mode, **fields})), [])
+                for missing in fields:
+                    partial = {k: v for k, v in fields.items() if k != missing}
+                    messages = self.check(self.with_auth({"mode": mode, **partial}))
+                    self.assertTrue(any(f"auth.{missing} is required" in m for m in messages), (mode, missing))
+
+    def test_auth_field_types_unknown_fields_and_secrets(self) -> None:
+        base = {"mode": "hosted_mcp_open", "mcp_url": "https://a.example/mcp"}
+        cases = {
+            "unknown": ({**base, "token": "x"}, "not a field the app accepts"),
+            "type": ({**base, "mcp_url": 3}, "must be a string"),
+            "https": ({**base, "mcp_url": "ftp://a.example/mcp"}, "https:// URL"),
+            "http": ({**base, "mcp_url": "http://a.example/mcp"}, "non-https"),
+            "secret": (
+                {
+                    "mode": "oauth_pkce_loopback",
+                    "authorization_url": "https://a.example/authorize",
+                    "token_url": "https://a.example/token",
+                    "client_id": "abc",
+                    "scopes": [],
+                    "client_secret": "s",
+                },
+                "leaked credential",
+            ),
+            "literal": ({"mode": "oauth_pkce_loopback", "scope_separator": "tab"}, "scope_separator must be one of"),
+            "nested": (
+                {"mode": "instance_browser", "instance_url": {"label": "A"}},
+                "instance_url.placeholder is required",
+            ),
+        }
+        for case, (auth, fragment) in cases.items():
+            with self.subTest(case=case):
+                messages = self.check(self.with_auth(auth))
+                self.assertTrue(any(fragment in m for m in messages), messages)
+
+    def test_fallback_auth_is_a_full_pat_paste_block(self) -> None:
+        manifest = self.with_auth(
+            {"mode": "hosted_mcp_open", "mcp_url": "https://a.example/mcp"},
+            fallback_auth={"mode": "pat_paste", "token_prefix": "x"},
+        )
+        self.assertTrue(any("fallback_auth.token_creation_url is required" in m for m in self.check(manifest)))
+
+    def test_extension_field_types(self) -> None:
+        manifest = self.with_auth(
+            {"mode": "hosted_mcp_open", "mcp_url": "https://a.example/mcp"}, longevity="forever", display_name=3
+        )
+        messages = " | ".join(self.check(manifest))
+        self.assertIn("longevity must be one of", messages)
+        self.assertIn("display_name must be a string", messages)
+
     def test_description_limit_counts_utf16(self) -> None:
         manifest = copy.deepcopy(self.manifest)
         manifest["description"] = "\U0001f600" * 251  # 502 UTF-16 units

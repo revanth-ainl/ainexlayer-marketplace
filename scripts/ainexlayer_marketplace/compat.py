@@ -17,6 +17,7 @@ from .rules import (
     AGENT_FORBIDDEN_KEYS,
     AGENT_NAME_RE,
     AGENT_SECRET_PATTERNS,
+    AUTH_FIELDS,
     AUTH_MODES,
     AVATAR_ID_RE,
     AVATAR_KEYS,
@@ -32,14 +33,17 @@ from .rules import (
     EFFORT_RE,
     ENV_NAME_RE,
     ENV_PLACEHOLDER_RE,
+    EXTENSION_FIELD_TYPES,
     EXTENSION_NAMESPACE,
     EXTENSION_NAMESPACES,
+    FORBIDDEN_AUTH_FIELDS,
     GRANT_MODES,
     HEADER_PLACEHOLDER_RE,
     HEX_COLOUR_RE,
     HOME_PATH_RE,
     IMAGE_DIGEST_RE,
     IMAGE_TAG_RE,
+    INSTANCE_URL_FIELDS,
     KNOWLEDGE_SCOPES,
     LEAD_AGENT_NAME,
     MAX_AVATAR_MAP_ENTRIES,
@@ -103,6 +107,77 @@ def _http_urls(value: Any, where: str) -> list[FieldError]:
     return []
 
 
+def _has_type(value: Any, expected: Any) -> bool:
+    if isinstance(expected, tuple):
+        return value in expected
+    if expected == "str":
+        return isinstance(value, str)
+    if expected == "int":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if expected == "bool":
+        return isinstance(value, bool)
+    if expected == "list_str":
+        return isinstance(value, list) and all(isinstance(v, str) for v in value)
+    return False
+
+
+def _describe(expected: Any) -> str:
+    if isinstance(expected, tuple):
+        return "one of " + ", ".join(repr(v) for v in expected)
+    return {"str": "a string", "int": "a whole number", "bool": "true or false", "list_str": "a list of strings"}[
+        expected
+    ]
+
+
+def _check_fields(block: Mapping[str, Any], spec: tuple, where: str) -> list[FieldError]:
+    """``block`` against ``(required, optional)`` field types; unknown keys are refused."""
+    required, optional = spec
+    errors: list[FieldError] = []
+    for key in block:
+        if key == "mode":
+            continue
+        if key in FORBIDDEN_AUTH_FIELDS:
+            errors.append(
+                FieldError(f"{where}.{key} may not be published: {FORBIDDEN_AUTH_FIELDS[key]}", "plugin_json")
+            )
+        elif key not in required and key not in optional:
+            allowed = ", ".join(sorted({*required, *optional})) or "no other fields"
+            errors.append(
+                FieldError(f"{where}.{key} is not a field the app accepts here (allowed: {allowed})", "plugin_json")
+            )
+    for key, expected in {**required, **optional}.items():
+        if key not in block:
+            if key in required:
+                errors.append(FieldError(f"{where}.{key} is required", "plugin_json"))
+            continue
+        value = block[key]
+        if value is None and key in optional:
+            continue
+        if expected == "instance_url":
+            if not isinstance(value, Mapping):
+                errors.append(FieldError(f"{where}.{key} must be an object", "plugin_json"))
+            else:
+                errors.extend(_check_fields(value, INSTANCE_URL_FIELDS, f"{where}.{key}"))
+            continue
+        if not _has_type(value, expected):
+            errors.append(FieldError(f"{where}.{key} must be {_describe(expected)}", "plugin_json"))
+        elif key.endswith("_url") and not value.strip().lower().startswith("https://"):
+            errors.append(FieldError(f"{where}.{key} must be an https:// URL", "plugin_json"))
+    return errors
+
+
+def check_auth(auth: Mapping[str, Any], where: str = "auth") -> list[FieldError]:
+    """An auth block as the app's catalog model for its mode accepts it:
+    every required field present with the right type, nothing unknown,
+    every ``*_url`` https, and no ``http://`` anywhere."""
+    mode = auth.get("mode")
+    if mode not in AUTH_FIELDS:
+        errors = [FieldError(f"{where}.mode must be one of {sorted(AUTH_MODES)}", "plugin_json")]
+    else:
+        errors = _check_fields(auth, AUTH_FIELDS[mode], where)
+    return errors + _http_urls(auth, where)
+
+
 def check_plugin_manifest(plugin_json: Any, *, expected_name: str | None = None) -> list[FieldError]:
     """Everything the app's ``convert_manifest`` would refuse in a plugin.json."""
     if not isinstance(plugin_json, Mapping):
@@ -148,21 +223,22 @@ def check_plugin_manifest(plugin_json: Any, *, expected_name: str | None = None)
             FieldError(f"the extension block needs an auth object (mode one of {sorted(AUTH_MODES)})", "plugin_json")
         )
     else:
-        if auth.get("mode") not in AUTH_MODES:
-            errors.append(FieldError(f"auth.mode must be one of {sorted(AUTH_MODES)}", "plugin_json"))
-        errors.extend(_http_urls(auth, "auth"))
+        errors.extend(check_auth(auth, "auth"))
     fallback = extension.get("fallback_auth")
     if fallback is not None:
         if not isinstance(fallback, Mapping):
             errors.append(FieldError("fallback_auth must be an object", "plugin_json"))
+        elif fallback.get("mode") != "pat_paste":
+            errors.append(FieldError("fallback_auth must use mode 'pat_paste'", "plugin_json"))
         else:
-            if fallback.get("mode") != "pat_paste":
-                errors.append(FieldError("fallback_auth must use mode 'pat_paste'", "plugin_json"))
-            errors.extend(_http_urls(fallback, "fallback_auth"))
+            errors.extend(check_auth(fallback, "fallback_auth"))
             if isinstance(auth, Mapping) and auth.get("mode") == "pat_paste":
                 errors.append(
                     FieldError("fallback_auth is redundant when auth.mode is already pat_paste", "plugin_json")
                 )
+    for key, expected in EXTENSION_FIELD_TYPES.items():
+        if extension.get(key) is not None and not _has_type(extension[key], expected):
+            errors.append(FieldError(f"{key} must be {_describe(expected)}", "plugin_json"))
     logo_url = extension.get("logo_url")
     if logo_url is not None:
         if not isinstance(logo_url, str) or not logo_url.strip():

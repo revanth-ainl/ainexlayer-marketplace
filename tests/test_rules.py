@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+APP = ROOT.parent / "AIAgentLayer"
 
 from ainexlayer_marketplace import rules
 
@@ -32,6 +34,15 @@ class RulesTest(unittest.TestCase):
         self.assertIsNotNone(rules.reserved_reason("plugin", "slack"))
         self.assertIsNone(rules.reserved_reason("plugin", "error-tracker"))
         self.assertIsNone(rules.reserved_reason("agent", "slack"))
+
+    @unittest.skipUnless(APP.is_dir(), "AIAgentLayer checkout not found next to this repository")
+    def test_reserved_names_cover_the_app(self) -> None:
+        builtin = APP / "dodaios" / "skills" / "builtin"
+        skills = {p.name for p in builtin.iterdir() if p.is_dir() and not p.name.startswith("__")}
+        self.assertEqual(sorted(skills - rules.RESERVED_SKILL_NAMES), [])
+        seed = json.loads((APP / "dodaios" / "marketplace" / "seed_catalog.json").read_text(encoding="utf-8-sig"))
+        plugin_ids = {p["id"] for p in seed["plugins"]}
+        self.assertEqual(sorted(plugin_ids - rules.RESERVED_PLUGIN_IDS), [])
 
     def test_app_identifiers_are_kept(self) -> None:
         # The app reads plugin manifests under these keys and opens publish

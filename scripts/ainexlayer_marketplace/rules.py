@@ -142,19 +142,75 @@ EXTENSION_NAMESPACE = "io.github.dodaios"
 LEGACY_EXTENSION_NAMESPACES = ("io.github.personaljarvis",)
 EXTENSION_NAMESPACES = (EXTENSION_NAMESPACE, *LEGACY_EXTENSION_NAMESPACES)
 
-# dodaios/marketplace/catalog.py: the auth modes a PluginSpec accepts.
-AUTH_MODES = frozenset(
-    {
-        "pat_paste",
-        "instance_browser",
-        "oauth_device_flow",
-        "hosted_mcp_oauth_dcr",
-        "oauth_pkce_loopback",
-        "hosted_mcp_allowlist",
-        "local",
-        "hosted_mcp_open",
-    }
-)
+# dodaios/marketplace/catalog.py: the auth block of a PluginSpec. Each mode
+# is its own model with extra="forbid", so a missing required field or an
+# unknown one makes the installer refuse the plugin. Types: "str", "int",
+# "bool", "list_str", "instance_url" (InstanceUrlSpec), or a tuple of the
+# allowed literal values. An optional field may also be null.
+_INSTANCE_URL = "instance_url"
+AUTH_FIELDS = {
+    "pat_paste": (
+        {"token_creation_url": "str", "token_prefix": "str", "validation_endpoint": "str", "instruction_md": "str"},
+        {
+            "token_prefixes": "list_str",
+            "validation_method": ("http_get", "mcp_initialize"),
+            "instance_url": _INSTANCE_URL,
+            "auth_scheme": ("bearer", "bot", "telegram_path", "figma"),
+        },
+    ),
+    "instance_browser": ({"instance_url": _INSTANCE_URL}, {"protocol": ("home_assistant",)}),
+    "oauth_device_flow": (
+        {"device_url": "str", "verify_url": "str", "token_url": "str", "client_id": "str", "scopes": "list_str"},
+        {"access_token_ttl_seconds": "int", "refresh_token_ttl_seconds": "int"},
+    ),
+    "hosted_mcp_oauth_dcr": (
+        {"discovery_url": "str", "mcp_url": "str"},
+        {
+            "fallback_mcp_url": "str",
+            "access_token_ttl_seconds": "int",
+            "refresh_supported": "bool",
+            "capabilities": "list_str",
+            "scopes": "list_str",
+        },
+    ),
+    "oauth_pkce_loopback": (
+        {"authorization_url": "str", "token_url": "str", "client_id": "str", "scopes": "list_str"},
+        {
+            "refresh_url": "str",
+            "revocation_url": "str",
+            "callback_port": "int",
+            "callback_path": "str",
+            "scope_separator": ("comma", "space"),
+            "user_scopes_only": "bool",
+            "refresh_supported": "bool",
+            "refresh_token_ttl_days": "int",
+            "resource": "str",
+            "offline_access": "bool",
+            "client_auth_method": ("client_secret_post", "client_secret_basic"),
+            "use_pkce": "bool",
+        },
+    ),
+    "hosted_mcp_allowlist": ({"mcp_url": "str"}, {"application_url": "str"}),
+    "local": ({}, {}),
+    "hosted_mcp_open": ({"mcp_url": "str"}, {}),
+}
+AUTH_MODES = frozenset(AUTH_FIELDS)
+#: catalog.InstanceUrlSpec
+INSTANCE_URL_FIELDS = ({"label": "str", "placeholder": "str"}, {"validation_path": "str", "help_md": "str"})
+#: The app's model allows these, but a community manifest is public: a client
+#: secret in it is a leaked credential, so the marketplace refuses it.
+FORBIDDEN_AUTH_FIELDS = {"client_secret": "a client secret in a public manifest is a leaked credential"}
+#: PluginSpec fields read from the extension block, with their types.
+EXTENSION_FIELD_TYPES = {
+    "display_name": "str",
+    "category": "str",
+    "logo_slug": "str",
+    "logo_color": "str",
+    "longevity": ("permanent", "self_renewing", "provider_limited"),
+    "longevity_note": "str",
+    "oauth_client_family": "str",
+    "post_install_hint_md": "str",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -325,7 +381,7 @@ _BUILTIN_SKILLS = (
     "founder-competitors", "founder-consumer", "founder-launch", "founder-marketing",
     "founder-offer", "founder-ops", "founder-plan", "founder-pricing", "memory-save",
     "personal-calendar", "personal-coordinator", "personal-social", "personal-todos",
-    "skill-creator",
+    "skill-creator", "task-worker", "work-coordinator",
 )  # fmt: skip
 RESERVED_SKILL_NAMES = (
     frozenset(_BUILTIN_SKILLS)

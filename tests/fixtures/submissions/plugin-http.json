@@ -11,14 +11,18 @@
         "display_name": "Error Tracker",
         "category": "Developer",
         "auth": {
-          "mode": "hosted_mcp_oauth_dcr"
+          "mode": "hosted_mcp_oauth_dcr",
+          "discovery_url": "https://mcp.example.com/.well-known/oauth-authorization-server",
+          "mcp_url": "https://mcp.example.com/mcp"
         }
       },
       "io.github.personaljarvis": {
         "display_name": "Error Tracker",
         "category": "Developer",
         "auth": {
-          "mode": "hosted_mcp_oauth_dcr"
+          "mode": "hosted_mcp_oauth_dcr",
+          "discovery_url": "https://mcp.example.com/.well-known/oauth-authorization-server",
+          "mcp_url": "https://mcp.example.com/mcp"
         }
       }
     }

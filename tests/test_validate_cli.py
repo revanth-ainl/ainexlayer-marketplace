@@ -76,6 +76,17 @@ class ValidateTreeTest(unittest.TestCase):
         (self.root / "skills" / "loose.md").write_text("x", encoding="utf-8")
         self.assertTrue(any("not a folder" in m for m in self.errors()))
 
+    def test_finder_metadata_is_ignored(self) -> None:
+        # macOS drops .DS_Store into folders the user opens; .gitignore
+        # keeps it out of the repository, so it must not fail the check.
+        for folder in (self.root / "skills", self.root / "skills" / "hello-ainexlayer"):
+            (folder / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1")
+        self.assertEqual(self.errors(), [])
+
+    def test_other_hidden_files_are_still_refused(self) -> None:
+        (self.root / "skills" / "hello-ainexlayer" / ".env").write_text("A=1", encoding="utf-8")
+        self.assertTrue(any("hidden" in m for m in self.errors()))
+
     def test_github_automation_is_refused(self) -> None:
         for rel in (".github/workflows/ci.yml", ".github/dependabot.yml", "docs/.nojekyll", "CNAME"):
             with self.subTest(path=rel):

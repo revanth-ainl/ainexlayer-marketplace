@@ -9,7 +9,11 @@
     "extensions": {
       "io.github.dodaios": {
         "auth": {
-          "mode": "pat_paste"
+          "mode": "pat_paste",
+          "token_creation_url": "https://notes.example.com/settings/tokens",
+          "token_prefix": "nidx_",
+          "validation_endpoint": "https://api.notes.example.com/v1/me",
+          "instruction_md": "Create a read-only token under Settings, Tokens and paste it here."
         }
       }
     }

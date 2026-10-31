@@ -25,6 +25,13 @@ from .rules import (
 #: File types a package folder may hold. A package is manifests and Markdown;
 #: anything else is code or data the app never reads.
 ALLOWED_SUFFIXES = frozenset({".json", ".md"})
+#: Files the operating system drops into folders. They are listed in
+#: .gitignore, so they never reach the repository and are not checked.
+IGNORED_NAMES = frozenset({".DS_Store"})
+
+
+def is_ignored(path: Path) -> bool:
+    return path.name in IGNORED_NAMES and path.is_file() and not path.is_symlink()
 
 
 def scan_text(text: str, where: str, *, strict: bool = False) -> list[FieldError]:
@@ -83,7 +90,8 @@ def _walk(directory: Path) -> Iterable[Path]:
         for name in sorted(dirnames):
             yield base / name
         for name in sorted(filenames):
-            yield base / name
+            if not is_ignored(base / name):
+                yield base / name
 
 
 def check_tree(

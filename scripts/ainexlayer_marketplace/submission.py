@@ -437,7 +437,9 @@ def from_tree(root: Path, kind: str, name: str) -> dict[str, Any]:
     folder = package_dir(root, kind, name)
     if not folder.is_dir():
         raise PackageLayoutError(f"{folder} is not a folder")
-    files = sorted(p.relative_to(folder).as_posix() for p in folder.rglob("*") if p.is_file())
+    files = sorted(
+        p.relative_to(folder).as_posix() for p in folder.rglob("*") if p.is_file() and not security.is_ignored(p)
+    )
 
     if kind == "skill":
         unexpected = [f for f in files if f != "SKILL.md"]

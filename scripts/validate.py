@@ -23,7 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ainexlayer_marketplace import submission
+from ainexlayer_marketplace import security, submission
 from ainexlayer_marketplace.rules import GITHUB_LOGIN_RE, KINDS, FieldError, warning
 
 KIND_DIRS = {"skill": "skills", "plugin": "plugins", "agent": "agents"}
@@ -57,6 +57,8 @@ def find_packages(root: Path) -> list[tuple]:
             continue
         for entry in sorted(base.iterdir()):
             if entry.name == "README.md" and entry.is_file() and not entry.is_symlink():
+                continue
+            if security.is_ignored(entry):
                 continue
             found.append((kind, entry.name))
     return found
