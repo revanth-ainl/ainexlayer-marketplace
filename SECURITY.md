@@ -37,8 +37,9 @@ package just because it passed validation.
 | AINexLayer Publish | push to `main` under `submissions/` | contents, pull-requests: write | `main` only |
 | AINexLayer Pages | push to `main`, or called by the three above | pages, id-token: write | `main` only |
 
-The workflows need the shared validation library to run; until it lands
-they stop at install or import and publish nothing.
+The intake, gate and publish workflows need the shared validation library;
+until it lands they stop at install and publish nothing. CI and Pages run
+today's checks meanwhile and add the library steps once its files exist.
 
 Rules every workflow follows, enforced by `tests/test_workflows.py`:
 

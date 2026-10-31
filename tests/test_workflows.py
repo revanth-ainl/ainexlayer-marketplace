@@ -123,6 +123,20 @@ class WorkflowSecurityTests(unittest.TestCase):
                         self.assertIn(name, PUBLISHERS, f"{name}:{job_id}")
                         self.assertRegex(step.get("run", ""), r"^python -I scripts/[a-z_]+\.py$")
 
+    def test_publishing_workflows_never_skip_their_dependencies(self) -> None:
+        # CI and Pages may wait for the validation library; the three
+        # workflows that hold a write token must fail closed without it.
+        for name in PUBLISHERS:
+            for job_id, job in load(name)["jobs"].items():
+                for step in steps(job):
+                    if "pip install" in step.get("run", "") or "scripts/" in step.get("run", ""):
+                        self.assertNotIn("if", step, f"{name}:{job_id}: {step.get('name')}")
+                        if "pip install" in step["run"]:
+                            self.assertIn("-r requirements-ci.txt", step["run"], f"{name}:{job_id}")
+
+    def test_publish_only_runs_for_submission_files(self) -> None:
+        self.assertEqual(load("publish.yml")["on"]["push"]["paths"], ["submissions/*.json"])
+
     def test_publishing_is_off_by_default(self) -> None:
         self.assertIn("vars.AINEXLAYER_INTAKE == 'true'", load("intake.yml")["jobs"]["intake"]["if"])
         self.assertIn("vars.AINEXLAYER_AUTOMERGE == 'true'", load("automerge.yml")["jobs"]["gate"]["if"])

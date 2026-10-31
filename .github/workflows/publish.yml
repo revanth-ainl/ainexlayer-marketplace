@@ -12,7 +12,7 @@ name: AINexLayer Publish
 on:
   push:
     branches: [main]
-    paths: ["submissions/**"]
+    paths: ["submissions/*.json"]
   workflow_dispatch:
     inputs:
       sha:

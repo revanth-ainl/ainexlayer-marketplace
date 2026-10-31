@@ -29,7 +29,7 @@ issues), Actions validates packages, and GitHub Pages serves the index.
 | `.github/workflows/` | CI, intake, auto-merge gate, publish and Pages |
 
 Not in the repository yet; they arrive with the shared validation library,
-and the workflows need them to run (see the Status note in
+and the publishing workflows need them to run (see the Status note in
 [PUBLISHING.md](PUBLISHING.md)): `trusted-publishers.json`, `docs/rules.json`,
 `scripts/export_rules.py`, `requirements-ci.txt`, and the library modules
 `compat`, `submission`, `registry` and `pipeline`.

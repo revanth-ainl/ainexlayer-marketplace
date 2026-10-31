@@ -9,8 +9,10 @@ feed, `docs/index.json`, served by GitHub Pages.
 > publishes. The package rule set below is agreed but **not enforced yet**.
 > It arrives with the shared validation library (`compat`, `submission`,
 > `registry`, `pipeline`, `requirements-ci.txt`, `scripts/export_rules.py`).
-> Until then the CI, Pages, intake, gate and publish workflows stop at
-> install or import and publish nothing. Today `scripts/validate.py` checks
+> Until then the intake, gate and publish workflows stop at install and
+> publish nothing. CI and Pages run today's checks and keep deploying the
+> feed; their library steps switch on by themselves once the library's files
+> are in the repository. Today `scripts/validate.py` checks
 > only folder names, file size and common secret patterns in `skills/` and
 > `plugins/`.
 
