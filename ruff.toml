@@ -1,0 +1,12 @@
+# Ruff settings for this repository, pinned so every run checks the same rules:
+#   uvx ruff@0.17.3 check scripts tests
+#   uvx ruff@0.17.3 format --check scripts tests
+required-version = "==0.17.3"
+line-length = 120
+target-version = "py39"
+
+[lint]
+# Ruff's default rule set, plus bug-prone patterns and security checks.
+extend-select = ["B", "S"]
+# Subprocess calls use fixed argument lists, never a shell.
+ignore = ["S603", "S607"]

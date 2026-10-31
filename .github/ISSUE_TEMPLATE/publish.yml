@@ -1,34 +1,42 @@
 name: Publish package
-description: Submit a skill, plugin, or agent template to the AINexLayer marketplace
+description: Submit a skill, plugin or agent template to the AINexLayer Marketplace
 title: "[publish] "
 labels: ["publish"]
 body:
-  - type: dropdown
-    id: kind
-    attributes:
-      label: Kind
-      options:
-        - skill
-        - plugin
-        - agent
-    validations:
-      required: true
-  - type: input
-    id: name
-    attributes:
-      label: Package name
-      description: Lowercase slug (a-z, 0-9, dots, hyphens). Must match the directory name.
-      placeholder: hello-ainexlayer
-    validations:
-      required: true
-  - type: textarea
-    id: payload
-    attributes:
-      label: Package payload
-      description: Paste the SKILL.md, plugin.json (+ mcp.json), or agent.json contents.
-    validations:
-      required: true
   - type: markdown
     attributes:
       value: |
-        Prefer a pull request that adds `skills/<name>/SKILL.md` (or `plugins/<name>/`) and runs `python scripts/compile_index.py`. This issue form is the fallback when the app cannot open a PR.
+        AIAgentLayer opens this issue for you when you publish from the app. Use this form only to publish by hand.
+
+        Paste one submission object below (the format is in PUBLISHING.md). Keep the title starting with `[publish]`.
+        You do not need `publisher` or `publisher_id`: the GitHub account that opens this issue is the publisher,
+        and anything else in those fields is replaced.
+
+        Never paste API keys, tokens or passwords. Credentials in an MCP config must be placeholders.
+  - type: textarea
+    id: submission
+    attributes:
+      label: Submission JSON
+      description: One JSON object with kind, name, version and the package fields. The form wraps it in a json code block.
+      render: json
+      placeholder: |
+        {
+          "kind": "skill",
+          "name": "my-skill",
+          "version": "1.0.0",
+          "title": "My skill",
+          "description": "One sentence on what it does.",
+          "categories": ["productivity"],
+          "skill_md": "---\nname: my-skill\ndescription: One sentence on what it does.\n---\n\n# My skill\n"
+        }
+    validations:
+      required: true
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Publisher agreement
+      options:
+        - label: I have the right to publish this package, and it contains no secrets or credentials.
+          required: true
+        - label: I understand it is listed as an unreviewed community package and users confirm before installing it.
+          required: true

@@ -1,28 +1,43 @@
-name: Registry CI
+name: AINexLayer Registry CI
+
+# Unprivileged checks for every pull request and every push to main: a
+# read-only token, no secrets. A pull request's own copy of this file runs
+# here, so nothing below is trusted to publish; the gate re-checks on its own.
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
-permissions:
-  contents: read
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate:
+  checks:
+    name: Tests, validation and generated files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
-      - name: Validate packages
-        run: python scripts/validate.py
-      - name: Compile index
-        run: python scripts/compile_index.py
-      - name: Index must be committed when packages change
+      - name: Install hash-pinned dependencies
+        run: python -m pip install --disable-pip-version-check --require-hashes --no-deps -r requirements-ci.txt -r requirements-dev.txt
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate the registry tree
+        run: python -I scripts/validate.py
+      - name: Generated files are current
         run: |
-          python scripts/compile_index.py
-          git diff --exit-code docs/index.json \
-            || (echo "docs/index.json is stale — run python scripts/compile_index.py and commit" && exit 1)
+          python -I scripts/export_rules.py --check
+          python -I scripts/compile_index.py
+          git diff --exit-code -- docs/index.json docs/rules.json \
+            || { echo "::error::docs/ is stale. Run scripts/export_rules.py and scripts/compile_index.py and commit the result."; exit 1; }

@@ -1,12 +1,14 @@
 # Submissions
 
-Drop one JSON file per package here (or open a GitHub Issue with the publish
-template once enabled). CI validates the payload and the compile step folds
-accepted packages into `docs/index.json`.
+One file per package: `submissions/<name>.json`, holding the submission
+object described in [PUBLISHING.md](../PUBLISHING.md).
 
-Until intake automation is wired, add skills under `skills/<name>/SKILL.md`
-(and plugins under `plugins/<name>/`) and run:
+Files arrive here three ways: the intake workflow writes them from a publish
+issue, a contributor adds one in a pull request, or a maintainer merges one.
+The publish pipeline then expands each file into `skills/`, `plugins/` or
+`agents/`, records the claim in `registry.json` and rebuilds `docs/`. Do not
+edit the expanded folders of a submitted package by hand; change the
+submission and bump its version.
 
-```bash
-python scripts/compile_index.py
-```
+A pull request that publishes must change exactly one file in this folder and
+nothing else.

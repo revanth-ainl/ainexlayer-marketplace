@@ -1,0 +1,4 @@
+# Test-only dependencies for the unprivileged CI job. Never installed by a
+# workflow that holds a write token.
+# Regenerate: uv pip compile requirements-dev.in --generate-hashes --python-version 3.9 -o requirements-dev.txt
+pyyaml
