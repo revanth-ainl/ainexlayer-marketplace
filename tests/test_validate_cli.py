@@ -102,7 +102,6 @@ class ValidateTreeTest(unittest.TestCase):
         (self.root / "registry.json").write_text("{", encoding="utf-8")
         self.assertEqual(quiet(validate.main, ["--root", str(self.root)]), 1)
 
-
     def test_registry_version_must_match_the_package(self) -> None:
         self.registry["owners"]["hello-ainexlayer"]["version"] = "1.0.1"
         self.save_registry()
@@ -129,7 +128,18 @@ class ValidateTreeTest(unittest.TestCase):
 
 def git(root: Path, *args: str) -> None:
     subprocess.run(
-        ["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false", *args],
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.name=t",
+            "-c",
+            "user.email=t@example.com",
+            "-c",
+            "commit.gpgsign=false",
+            *args,
+        ],
         check=True,
         capture_output=True,
     )

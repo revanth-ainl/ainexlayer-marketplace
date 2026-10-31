@@ -168,7 +168,7 @@ def check_trusted(data: Any) -> list[FieldError]:
         pid = entry.get("id")
         if pid is None:
             if entry.get("status") != "pending":
-                errors.append(FieldError(f"{at} has no id; mark it \"status\": \"pending\" until it is looked up", where))
+                errors.append(FieldError(f'{at} has no id; mark it "status": "pending" until it is looked up', where))
             else:
                 errors.append(warning(f"{at} ({login}) has no confirmed GitHub id yet; it is not trusted", where))
         elif not is_publisher_id(pid):
@@ -259,7 +259,9 @@ def check_claim(
     if owner is None:
         if publisher_id is None:
             errors.append(
-                warning("publisher_id is missing; record the owner's numeric GitHub id with a new claim", "publisher_id")
+                warning(
+                    "publisher_id is missing; record the owner's numeric GitHub id with a new claim", "publisher_id"
+                )
             )
         return errors
 
@@ -273,9 +275,16 @@ def check_claim(
     if is_publisher_id(stored_id):
         if publisher_id == stored_id:
             same_owner = True
-            if isinstance(publisher, str) and isinstance(stored_login, str) and publisher.lower() != stored_login.lower():
+            if (
+                isinstance(publisher, str)
+                and isinstance(stored_login, str)
+                and publisher.lower() != stored_login.lower()
+            ):
                 errors.append(
-                    warning(f"login changed from {stored_login!r} to {publisher!r}; the account id still matches", "publisher")
+                    warning(
+                        f"login changed from {stored_login!r} to {publisher!r}; the account id still matches",
+                        "publisher",
+                    )
                 )
     elif isinstance(publisher, str) and isinstance(stored_login, str) and publisher.lower() == stored_login.lower():
         same_owner = True
@@ -298,7 +307,9 @@ def check_claim(
     stored_version = owner.get("version")
     if is_semver(version) and is_semver(stored_version) and compare_versions(version, stored_version) < 0:
         errors.append(
-            FieldError(f"version {version} is lower than the published {stored_version}; versions only go up", "version")
+            FieldError(
+                f"version {version} is lower than the published {stored_version}; versions only go up", "version"
+            )
         )
     return errors
 

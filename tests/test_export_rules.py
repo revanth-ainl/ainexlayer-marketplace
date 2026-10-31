@@ -68,7 +68,7 @@ class ExportRulesTest(unittest.TestCase):
     def test_check_mode(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "rules.json"
-            run = lambda *a: export_rules.main(["--output", str(out), *a])  # noqa: E731
+            run = lambda *a: export_rules.main(["--output", str(out), *a])
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(run("--check"), 1)
                 self.assertFalse(out.exists())

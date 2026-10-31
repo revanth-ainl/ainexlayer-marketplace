@@ -210,8 +210,12 @@ class CompileTest(unittest.TestCase):
     def test_publisher_and_trust(self) -> None:
         index = self.build()
         skill, plugin = index["skills"][0], index["plugins"][0]
-        self.assertEqual((skill["publisher"], skill["publisher_id"], skill["trust"]), ("revanth-ainl", 340421019, "official"))
-        self.assertEqual((plugin["publisher"], plugin["publisher_id"], plugin["trust"]), ("community-dev", OTHER_ID, "community"))
+        self.assertEqual(
+            (skill["publisher"], skill["publisher_id"], skill["trust"]), ("revanth-ainl", 340421019, "official")
+        )
+        self.assertEqual(
+            (plugin["publisher"], plugin["publisher_id"], plugin["trust"]), ("community-dev", OTHER_ID, "community")
+        )
         (self.root / "trusted-publishers.json").unlink()
         self.assertEqual(self.build()["skills"][0]["trust"], "community")
 

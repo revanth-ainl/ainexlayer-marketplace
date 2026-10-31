@@ -139,7 +139,8 @@ class CheckClaimTest(unittest.TestCase):
 
     def test_downgrade_is_refused_same_version_allowed(self) -> None:
         self.assertEqual(
-            fields(registry.check_claim(V2, "skill", "hello-ainexlayer", "1.1.9", "revanth-ainl", OWNER_ID)), {"version"}
+            fields(registry.check_claim(V2, "skill", "hello-ainexlayer", "1.1.9", "revanth-ainl", OWNER_ID)),
+            {"version"},
         )
         self.assertEqual(registry.check_claim(V2, "skill", "hello-ainexlayer", "1.2.0", "revanth-ainl", OWNER_ID), [])
 
@@ -173,7 +174,9 @@ class CheckClaimTest(unittest.TestCase):
 class ApplyClaimTest(unittest.TestCase):
     def test_new_claim(self) -> None:
         before = copy.deepcopy(V2)
-        out = registry.apply_claim(V2, "agent", "helper", "1.0.0", "someone", OTHER_ID, claimed_at="2026-10-31T00:00:00Z")
+        out = registry.apply_claim(
+            V2, "agent", "helper", "1.0.0", "someone", OTHER_ID, claimed_at="2026-10-31T00:00:00Z"
+        )
         self.assertEqual(V2, before)
         self.assertEqual(
             out["owners"]["helper"],
@@ -215,7 +218,9 @@ class ApplyClaimTest(unittest.TestCase):
 
     def test_idempotent(self) -> None:
         once = registry.apply_claim(V2, "skill", "hello-ainexlayer", "1.3.0", "revanth-ainl", OWNER_ID, claimed_at="x")
-        twice = registry.apply_claim(once, "skill", "hello-ainexlayer", "1.3.0", "revanth-ainl", OWNER_ID, claimed_at="y")
+        twice = registry.apply_claim(
+            once, "skill", "hello-ainexlayer", "1.3.0", "revanth-ainl", OWNER_ID, claimed_at="y"
+        )
         self.assertEqual(once, twice)
 
 
@@ -242,7 +247,10 @@ class TrustedTest(unittest.TestCase):
         self.assertEqual([p for p in registry.check_trusted(data) if p.is_error], [])
 
     def test_shape_errors(self) -> None:
-        bad = {"version": 1, "publishers": [{"login": "a", "id": "5", "trust": "gold", "roles": ["admin"]}, {"id": None}]}
+        bad = {
+            "version": 1,
+            "publishers": [{"login": "a", "id": "5", "trust": "gold", "roles": ["admin"]}, {"id": None}],
+        }
         messages = " | ".join(p.message for p in registry.check_trusted(bad) if p.is_error)
         for expected in ("positive integer", "trust must be", "roles may only", "GitHub login", "pending"):
             self.assertIn(expected, messages)
