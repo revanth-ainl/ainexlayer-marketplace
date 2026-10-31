@@ -68,12 +68,17 @@ class ExportRulesTest(unittest.TestCase):
     def test_check_mode(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "rules.json"
-            run = lambda *a: export_rules.main(["--output", str(out), *a])
+            schemas_dir = Path(tmp) / "schemas"
+            run = lambda *a: export_rules.main(["--output", str(out), "--schemas-dir", str(schemas_dir), *a])
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(run("--check"), 1)
                 self.assertFalse(out.exists())
                 self.assertEqual(run(), 0)
                 self.assertEqual(run("--check"), 0)
+                self.assertEqual(len(list(schemas_dir.glob("*.schema.json"))), 8)
+                (schemas_dir / "stray.json").write_text("{}", encoding="utf-8")
+                self.assertEqual(run("--check"), 1)
+                (schemas_dir / "stray.json").unlink()
                 out.write_text(out.read_text(encoding="utf-8").replace("3", "4", 1), encoding="utf-8")
                 self.assertEqual(run("--check"), 1)
             json.loads(out.read_text(encoding="utf-8"))

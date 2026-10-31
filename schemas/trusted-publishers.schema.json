@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/trusted-publishers.schema.json",
+  "title": "First-party publishers (trusted-publishers.json)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "version",
+    "publishers"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "publishers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "login",
+          "id",
+          "trust"
+        ],
+        "properties": {
+          "login": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "const": "pending"
+          },
+          "name": {
+            "type": "string"
+          },
+          "trust": {
+            "enum": [
+              "official",
+              "community"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "const": "maintainer"
+            }
+          },
+          "verified": {
+            "type": "object"
+          }
+        },
+        "if": {
+          "properties": {
+            "id": {
+              "type": "null"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "status"
+          ]
+        }
+      }
+    }
+  }
+}

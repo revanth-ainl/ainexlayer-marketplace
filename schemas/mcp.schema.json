@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/mcp.schema.json",
+  "title": "MCP configuration (mcp.json): exactly one server",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "mcpServers"
+  ],
+  "properties": {
+    "mcpServers": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/http"
+          },
+          {
+            "$ref": "#/$defs/stdio"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "http": {
+      "type": "object",
+      "required": [
+        "type",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "const": "streamable-http"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        }
+      },
+      "not": {
+        "required": [
+          "headers"
+        ]
+      },
+      "description": "No static headers: the app adds the token from mcp_auth_header_template."
+    },
+    "stdio": {
+      "type": "object",
+      "required": [
+        "type",
+        "command"
+      ],
+      "properties": {
+        "type": {
+          "const": "stdio"
+        },
+        "command": {
+          "type": "string",
+          "pattern": "^(?:.*[/\\\\])?(?:npx|uvx|docker)(?:\\.exe|\\.cmd)?$",
+          "description": "One of npx, uvx, docker (case-insensitive in the validator), with only the launcher options the app allows and an exact pin."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+            "not": {
+              "enum": [
+                "COMSPEC",
+                "DOCKER_HOST",
+                "DYLD_INSERT_LIBRARIES",
+                "DYLD_LIBRARY_PATH",
+                "LD_AUDIT",
+                "LD_LIBRARY_PATH",
+                "LD_PRELOAD",
+                "NODE_OPTIONS",
+                "NODE_PATH",
+                "NPM_CONFIG_REGISTRY",
+                "PATH",
+                "PATHEXT",
+                "PIP_EXTRA_INDEX_URL",
+                "PIP_INDEX_URL",
+                "PYTHONHOME",
+                "PYTHONPATH",
+                "PYTHONSTARTUP",
+                "SYSTEMROOT",
+                "UV_EXTRA_INDEX_URL",
+                "UV_INDEX_URL",
+                "WINDIR"
+              ]
+            }
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^\\$(?:plugin_[a-z0-9_.-]+|\\{plugin_[a-z0-9_.-]+\\})$"
+          }
+        }
+      }
+    }
+  },
+  "description": "Transports: streamable-http, stdio; sse is refused."
+}
