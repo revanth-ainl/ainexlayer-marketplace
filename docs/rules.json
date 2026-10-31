@@ -1,0 +1,646 @@
+{
+  "generated_by": "scripts/export_rules.py",
+  "authority": "scripts/ainexlayer_marketplace (this file is a read-only export)",
+  "app_source_commit": "03f4afc847",
+  "modules": {
+    "rules": {
+      "summary": "The rule set, as data: names, limits, patterns and reserved identifiers.",
+      "constants": {
+        "AGENT_FORBIDDEN_KEYS": {
+          "account_id": "it names the author's own subscription",
+          "always_allow": "a template may not pre-approve tools",
+          "approval_mode": "a template may not switch approvals off",
+          "approval_rules": "only require_approval may travel, never an allow rule",
+          "browser_allowed_domains": "the installer's own browser settings apply",
+          "browser_mode": "the installer's own browser settings apply",
+          "computer_id": "it names a machine only the author has",
+          "daily_budget_usd": "the installer's own budget applies",
+          "max_concurrent_runs": "the installer's own limit applies",
+          "model": "the installer chooses their own model",
+          "parent_agent_id": "it is an id from the author's own team",
+          "permission_ceiling": "a template may not widen what runs without asking",
+          "provider": "the installer chooses their own model",
+          "wiki_namespace": "it is set on the installing machine",
+          "workspace_dir": "it is a folder on the author's machine"
+        },
+        "AGENT_NAME_RE": "^[^/\\\\:@#<>\\\"'`\\x00-\\x1f]{1,40}$",
+        "AGENT_SECRET_PATTERNS": [
+          "gh[pousr]_[A-Za-z0-9]{20,}",
+          "github_pat_[A-Za-z0-9_]{20,}",
+          "sk-[A-Za-z0-9_-]{20,}",
+          "xox[baprs]-[A-Za-z0-9-]{10,}",
+          "AKIA[0-9A-Z]{16}",
+          "AIza[0-9A-Za-z_-]{30,}",
+          "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+          "eyJ[A-Za-z0-9_-]{20,}\\.eyJ[A-Za-z0-9_-]{20,}",
+          {
+            "pattern": "(?i)\\b(?:api[_-]?key|secret|password|passwd|token|bearer)\\b\\s*[:=]\\s*[\\\"']?[^\\s\\\"']{8,}",
+            "flags": [
+              "IGNORECASE"
+            ]
+          }
+        ],
+        "APP_SOURCE_COMMIT": "03f4afc847",
+        "AUTH_FIELDS": {
+          "pat_paste": {
+            "required": {
+              "token_creation_url": "str",
+              "token_prefix": "str",
+              "validation_endpoint": "str",
+              "instruction_md": "str"
+            },
+            "optional": {
+              "token_prefixes": "list_str",
+              "validation_method": [
+                "http_get",
+                "mcp_initialize"
+              ],
+              "instance_url": "instance_url",
+              "auth_scheme": [
+                "bearer",
+                "bot",
+                "telegram_path",
+                "figma"
+              ]
+            }
+          },
+          "instance_browser": {
+            "required": {
+              "instance_url": "instance_url"
+            },
+            "optional": {
+              "protocol": [
+                "home_assistant"
+              ]
+            }
+          },
+          "oauth_device_flow": {
+            "required": {
+              "device_url": "str",
+              "verify_url": "str",
+              "token_url": "str",
+              "client_id": "str",
+              "scopes": "list_str"
+            },
+            "optional": {
+              "access_token_ttl_seconds": "int",
+              "refresh_token_ttl_seconds": "int"
+            }
+          },
+          "hosted_mcp_oauth_dcr": {
+            "required": {
+              "discovery_url": "str",
+              "mcp_url": "str"
+            },
+            "optional": {
+              "fallback_mcp_url": "str",
+              "access_token_ttl_seconds": "int",
+              "refresh_supported": "bool",
+              "capabilities": "list_str",
+              "scopes": "list_str"
+            }
+          },
+          "oauth_pkce_loopback": {
+            "required": {
+              "authorization_url": "str",
+              "token_url": "str",
+              "client_id": "str",
+              "scopes": "list_str"
+            },
+            "optional": {
+              "refresh_url": "str",
+              "revocation_url": "str",
+              "callback_port": "int",
+              "callback_path": "str",
+              "scope_separator": [
+                "comma",
+                "space"
+              ],
+              "user_scopes_only": "bool",
+              "refresh_supported": "bool",
+              "refresh_token_ttl_days": "int",
+              "resource": "str",
+              "offline_access": "bool",
+              "client_auth_method": [
+                "client_secret_post",
+                "client_secret_basic"
+              ],
+              "use_pkce": "bool"
+            }
+          },
+          "hosted_mcp_allowlist": {
+            "required": {
+              "mcp_url": "str"
+            },
+            "optional": {
+              "application_url": "str"
+            }
+          },
+          "local": {
+            "required": {},
+            "optional": {}
+          },
+          "hosted_mcp_open": {
+            "required": {
+              "mcp_url": "str"
+            },
+            "optional": {}
+          }
+        },
+        "AUTH_MODES": [
+          "hosted_mcp_allowlist",
+          "hosted_mcp_oauth_dcr",
+          "hosted_mcp_open",
+          "instance_browser",
+          "local",
+          "oauth_device_flow",
+          "oauth_pkce_loopback",
+          "pat_paste"
+        ],
+        "AVATAR_ID_RE": "^[a-z0-9_-]{1,40}$",
+        "AVATAR_KEYS": [
+          "archetype",
+          "base",
+          "companion",
+          "contract",
+          "eyewear",
+          "hairStyle",
+          "heightM",
+          "inner",
+          "outfit",
+          "palette",
+          "parts",
+          "style"
+        ],
+        "AVATAR_MAP_KEYS": [
+          "parts",
+          "palette"
+        ],
+        "AVATAR_STRING_KEYS": [
+          "archetype",
+          "base",
+          "style",
+          "hairStyle",
+          "outfit",
+          "eyewear"
+        ],
+        "CAPABILITY_LIST_KEYS": [
+          "focus",
+          "grants",
+          "denies",
+          "require_approval"
+        ],
+        "CAPABILITY_RE": "^[a-z]+:[A-Za-z0-9_.:-]{1,80}$",
+        "COMPANION_KEYS": [
+          "color",
+          "creature",
+          "enabled",
+          "eyes",
+          "followDistanceM",
+          "look",
+          "pet",
+          "shape",
+          "sizeM"
+        ],
+        "DEFAULT_SKILL_FLAVOR": "portable",
+        "DEPRECATED_TRANSPORTS": [
+          "sse"
+        ],
+        "DOCKER_FLAGS": [
+          "--interactive",
+          "--rm",
+          "-i"
+        ],
+        "DOCKER_VALUE_FLAGS": [
+          "--env",
+          "-e"
+        ],
+        "DRAWN_PET_RE": "^u[0-9a-f]{16}$",
+        "EFFORT_RE": "^[a-z]{0,16}$",
+        "ENV_NAME_RE": "^[A-Za-z_][A-Za-z0-9_]*$",
+        "ENV_PLACEHOLDER_RE": "^\\$(?:plugin_[a-z0-9_.-]+|\\{plugin_[a-z0-9_.-]+\\})$",
+        "EXTENSION_FIELD_TYPES": {
+          "display_name": "str",
+          "category": "str",
+          "logo_slug": "str",
+          "logo_color": "str",
+          "longevity": [
+            "permanent",
+            "self_renewing",
+            "provider_limited"
+          ],
+          "longevity_note": "str",
+          "oauth_client_family": "str",
+          "post_install_hint_md": "str"
+        },
+        "EXTENSION_NAMESPACE": "io.github.dodaios",
+        "EXTENSION_NAMESPACES": [
+          "io.github.dodaios",
+          "io.github.personaljarvis"
+        ],
+        "FORBIDDEN_AUTH_FIELDS": {
+          "client_secret": "a client secret in a public manifest is a leaked credential"
+        },
+        "FORBIDDEN_NAME_SUBSTRINGS": [
+          "--",
+          ".."
+        ],
+        "FORBIDDEN_SKILL_FRONTMATTER": [
+          "risk_policy"
+        ],
+        "GENERIC_SECRET_RE": {
+          "pattern": "(?i)\\b(?:api[_-]?key|secret|password|passwd|token|bearer)\\b\\s*[:=]\\s*[\\\"']?[^\\s\\\"']{8,}",
+          "flags": [
+            "IGNORECASE"
+          ]
+        },
+        "GITHUB_LOGIN_RE": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$",
+        "GRANT_MODES": [
+          "all",
+          "allowlist"
+        ],
+        "HEADER_PLACEHOLDER_RE": "\\$(?:plugin_[a-z0-9_.-]+|\\{plugin_[a-z0-9_.-]+\\})",
+        "HEX_COLOUR_RE": "^#[0-9a-fA-F]{6}$",
+        "HOME_PATH_RE": {
+          "pattern": "(?i)(?:\\b[A-Za-z]:[\\\\/]+Users[\\\\/]+[^\\s\\\"'`)]*[^\\s\\\"'`).,;:!?]|/Users/[^\\s\\\"'`)]*[^\\s\\\"'`).,;:!?]|/home/[^\\s\\\"'`)]*[^\\s\\\"'`).,;:!?])",
+          "flags": [
+            "IGNORECASE"
+          ]
+        },
+        "IMAGE_DIGEST_RE": "^[a-z0-9][a-z0-9._/-]*@sha256:[0-9a-f]{64}$",
+        "IMAGE_TAG_RE": "^[a-z0-9][a-z0-9._/-]*:[0-9][0-9A-Za-z._-]*$",
+        "INSTANCE_URL_FIELDS": {
+          "required": {
+            "label": "str",
+            "placeholder": "str"
+          },
+          "optional": {
+            "validation_path": "str",
+            "help_md": "str"
+          }
+        },
+        "INTAKE_BODY_MARKER": "<!-- jarvis-marketplace-submission -->",
+        "INTAKE_TITLE_TAG": "[publish]",
+        "KINDS": [
+          "plugin",
+          "skill",
+          "agent"
+        ],
+        "KNOWLEDGE_SCOPES": [
+          "shared",
+          "own"
+        ],
+        "LEAD_AGENT_NAME": "Jarvis",
+        "LEGACY_EXTENSION_NAMESPACES": [
+          "io.github.personaljarvis"
+        ],
+        "MAX_AVATAR_MAP_ENTRIES": 32,
+        "MAX_BUNDLED_SKILLS": 10,
+        "MAX_CAPABILITIES": 60,
+        "MAX_CATEGORIES": 10,
+        "MAX_COMPATIBLE_AGENTS": 8,
+        "MAX_COMPATIBLE_AGENT_CHARS": 32,
+        "MAX_DESCRIPTION_CHARS": 500,
+        "MAX_FILE_BYTES": 131072,
+        "MAX_INSTRUCTIONS_BYTES": 20000,
+        "MAX_PACKAGE_FILE_BYTES": 131072,
+        "MAX_SKILL_MD_BYTES": 65536,
+        "MAX_SUMMARY_CHARS": 500,
+        "MAX_TITLE_CHARS": 120,
+        "MCP_TRANSPORTS": [
+          "streamable-http",
+          "stdio"
+        ],
+        "NAME_RE": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+        "NPM_PIN_RE": "^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*@\\d+\\.\\d+\\.\\d+[0-9A-Za-z.+-]*$",
+        "NPX_FLAGS": [
+          "--yes",
+          "-y"
+        ],
+        "PYPI_PIN_RE": "^[A-Za-z0-9][A-Za-z0-9._-]*(?:==|@)\\d+\\.\\d+\\.\\d+[0-9A-Za-z.+-]*$",
+        "REQUIRED_SKILL_FRONTMATTER": [
+          "name",
+          "description"
+        ],
+        "RESERVED_ENV_NAMES": [
+          "COMSPEC",
+          "DOCKER_HOST",
+          "DYLD_INSERT_LIBRARIES",
+          "DYLD_LIBRARY_PATH",
+          "LD_AUDIT",
+          "LD_LIBRARY_PATH",
+          "LD_PRELOAD",
+          "NODE_OPTIONS",
+          "NODE_PATH",
+          "NPM_CONFIG_REGISTRY",
+          "PATH",
+          "PATHEXT",
+          "PIP_EXTRA_INDEX_URL",
+          "PIP_INDEX_URL",
+          "PYTHONHOME",
+          "PYTHONPATH",
+          "PYTHONSTARTUP",
+          "SYSTEMROOT",
+          "UV_EXTRA_INDEX_URL",
+          "UV_INDEX_URL",
+          "WINDIR"
+        ],
+        "RESERVED_PLUGIN_IDS": [
+          "agentmail",
+          "airtable",
+          "amd-gpu",
+          "amd_gpu",
+          "apollo",
+          "asana",
+          "atlassian",
+          "aws",
+          "azure",
+          "cal-com",
+          "cal_com",
+          "canva",
+          "clickup",
+          "cloudflare",
+          "discord",
+          "dropbox",
+          "figma",
+          "github",
+          "gitlab",
+          "gmail",
+          "google-calendar",
+          "google-cloud",
+          "google-drive",
+          "google_calendar",
+          "google_cloud",
+          "google_drive",
+          "granola",
+          "higgsfield",
+          "home-assistant",
+          "home_assistant",
+          "hubspot",
+          "linear",
+          "linkedin",
+          "meta",
+          "microsoft-todo",
+          "microsoft_todo",
+          "notion",
+          "onedrive",
+          "onenote",
+          "outlook",
+          "salesforce",
+          "sharepoint",
+          "slack",
+          "spotify",
+          "stripe",
+          "supabase",
+          "teams",
+          "telegram",
+          "todoist",
+          "vercel",
+          "x",
+          "youtube-music",
+          "youtube-studio",
+          "youtube_music",
+          "youtube_studio",
+          "zoom"
+        ],
+        "RESERVED_SKILL_NAMES": [
+          "bdr",
+          "bdr-compliance",
+          "bdr-linkedin",
+          "bdr-outreach",
+          "bdr-prospecting",
+          "bdr-qualification",
+          "bdr-signals",
+          "bg-ads",
+          "bg-checkpoint",
+          "bg-content",
+          "bg-diagnose",
+          "bg-discover",
+          "bg-outreach",
+          "bg-retro",
+          "bg-seo",
+          "bg-social",
+          "bg-strategy",
+          "cli-gcloud",
+          "control-api",
+          "deep-work-mode",
+          "dodaios-doc-author",
+          "erp-catalog",
+          "erp-claims",
+          "erp-compliance",
+          "erp-customer",
+          "erp-deal",
+          "erp-discord",
+          "erp-purchasing",
+          "erp-sales",
+          "erp-todo",
+          "erp-warehouse",
+          "erp-workflow",
+          "founder-board",
+          "founder-brand",
+          "founder-cfo",
+          "founder-competitors",
+          "founder-consumer",
+          "founder-launch",
+          "founder-marketing",
+          "founder-offer",
+          "founder-ops",
+          "founder-plan",
+          "founder-pricing",
+          "memory-save",
+          "personal-calendar",
+          "personal-coordinator",
+          "personal-social",
+          "personal-todos",
+          "plugin-agentmail",
+          "plugin-airtable",
+          "plugin-amd-gpu",
+          "plugin-amd_gpu",
+          "plugin-apollo",
+          "plugin-asana",
+          "plugin-atlassian",
+          "plugin-aws",
+          "plugin-azure",
+          "plugin-cal-com",
+          "plugin-cal_com",
+          "plugin-canva",
+          "plugin-clickup",
+          "plugin-cloudflare",
+          "plugin-discord",
+          "plugin-dropbox",
+          "plugin-figma",
+          "plugin-github",
+          "plugin-gitlab",
+          "plugin-gmail",
+          "plugin-google-calendar",
+          "plugin-google-cloud",
+          "plugin-google-drive",
+          "plugin-google_calendar",
+          "plugin-google_cloud",
+          "plugin-google_drive",
+          "plugin-granola",
+          "plugin-higgsfield",
+          "plugin-home-assistant",
+          "plugin-home_assistant",
+          "plugin-hubspot",
+          "plugin-linear",
+          "plugin-linkedin",
+          "plugin-meta",
+          "plugin-microsoft-todo",
+          "plugin-microsoft_todo",
+          "plugin-notion",
+          "plugin-onedrive",
+          "plugin-onenote",
+          "plugin-outlook",
+          "plugin-salesforce",
+          "plugin-sharepoint",
+          "plugin-slack",
+          "plugin-spotify",
+          "plugin-stripe",
+          "plugin-supabase",
+          "plugin-teams",
+          "plugin-telegram",
+          "plugin-todoist",
+          "plugin-vercel",
+          "plugin-x",
+          "plugin-youtube-music",
+          "plugin-youtube-studio",
+          "plugin-youtube_music",
+          "plugin-youtube_studio",
+          "plugin-zoom",
+          "skill-creator",
+          "task-worker",
+          "work-coordinator"
+        ],
+        "SECRET_PATTERNS": [
+          "gh[pousr]_[A-Za-z0-9]{20,}",
+          "github_pat_[A-Za-z0-9_]{20,}",
+          "sk-[A-Za-z0-9_-]{20,}",
+          "xox[baprs]-[A-Za-z0-9-]{10,}",
+          "AKIA[0-9A-Z]{16}",
+          "AIza[0-9A-Za-z_-]{30,}",
+          "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+          "eyJ[A-Za-z0-9_-]{20,}\\.eyJ[A-Za-z0-9_-]{20,}"
+        ],
+        "SEMVER_RE": "^\\d+\\.\\d+\\.\\d+$",
+        "SKILL_FLAVORS": [
+          "jarvis",
+          "portable"
+        ],
+        "STDIO_LAUNCHERS": [
+          "npx",
+          "uvx",
+          "docker"
+        ],
+        "TEMPLATE_KEYS": [
+          "avatar",
+          "denies",
+          "effort",
+          "focus",
+          "grant_mode",
+          "grants",
+          "instructions",
+          "knowledge_scope",
+          "name",
+          "require_approval",
+          "schema",
+          "skills",
+          "tier",
+          "title"
+        ],
+        "TEMPLATE_SCHEMA": 1,
+        "TEMPLATE_SKILL_RE": "^[A-Za-z0-9_.-]{1,80}$",
+        "TIERS": [
+          "specialist",
+          "orchestrator"
+        ],
+        "TOKEN_LITERAL_RE": "[A-Za-z0-9_\\-]{20,}",
+        "UVX_FLAGS": [
+          "--from"
+        ]
+      }
+    },
+    "submission": {
+      "summary": "One package, checked as a whole: the submission format and the folder layout.",
+      "constants": {
+        "ALLOWED_KEYS": {
+          "skill": [
+            "categories",
+            "compatible_agents",
+            "description",
+            "flavor",
+            "kind",
+            "name",
+            "publisher",
+            "publisher_id",
+            "skill_md",
+            "title",
+            "version"
+          ],
+          "plugin": [
+            "kind",
+            "mcp_json",
+            "name",
+            "plugin_json",
+            "publisher",
+            "publisher_id",
+            "skills",
+            "usage_card",
+            "version"
+          ],
+          "agent": [
+            "agent",
+            "categories",
+            "description",
+            "kind",
+            "name",
+            "publisher",
+            "publisher_id",
+            "title",
+            "version"
+          ]
+        },
+        "MAX_CATEGORY_CHARS": 40,
+        "USAGE_CARD_PATHS": [
+          "usage_card.md",
+          "usage-card.md",
+          "io.github.dodaios/usage-card.md",
+          "io.github.personaljarvis/usage-card.md",
+          "io.github.ainexlayer/usage-card.md"
+        ]
+      }
+    },
+    "security": {
+      "summary": "Checks on raw text and on package folders: credentials, paths, sizes.",
+      "constants": {
+        "ALLOWED_SUFFIXES": [
+          ".json",
+          ".md"
+        ],
+        "IGNORED_NAMES": [
+          ".DS_Store"
+        ]
+      }
+    },
+    "registry": {
+      "summary": "Who owns each package name: ``registry.json`` and ``trusted-publishers.json``.",
+      "constants": {
+        "MAINTAINER_ROLE": "maintainer",
+        "OWNER_KEYS": [
+          "claimed_at",
+          "kind",
+          "maintainer_managed",
+          "publisher",
+          "publisher_id",
+          "version"
+        ],
+        "REGISTRY_FORMAT": 2,
+        "TRUSTED_FORMAT": 1,
+        "TRUST_LEVELS": [
+          "official",
+          "community"
+        ]
+      }
+    }
+  }
+}
