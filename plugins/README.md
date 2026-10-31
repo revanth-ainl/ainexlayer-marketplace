@@ -7,6 +7,5 @@ Each plugin lives in `plugins/<name>/` with Agent Plugins v1.0.0 manifests:
 - a usage card (optional)
 - `skills/<skill>/SKILL.md` for bundled skills (optional)
 
-Community plugins are expanded here from `submissions/<name>.json` by the
-publish pipeline; see [PUBLISHING.md](../PUBLISHING.md).
-`scripts/compile_index.py` embeds the manifests into `docs/index.json`.
+A maintainer adds each plugin here (see [PUBLISHING.md](../PUBLISHING.md)),
+and `scripts/compile_index.py` embeds the manifests into `docs/index.json`.

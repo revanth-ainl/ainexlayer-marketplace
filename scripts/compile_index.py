@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Compile plugins/, skills/, agents/ into docs/index.json for GitHub Pages.
+"""Compile plugins/, skills/, agents/ into docs/index.json, the feed
+AIAgentLayer reads straight from the main branch.
 
-Shape matches AIAgentLayer CommunityIndex (jarvis/marketplace/community_source.py).
-Run from the registry repo root:
+The shape matches AIAgentLayer's CommunityIndex model (its marketplace
+community source). Run from the registry repo root:
 
-    python scripts/compile_index.py
+    python3 scripts/compile_index.py
 """
 
 from __future__ import annotations

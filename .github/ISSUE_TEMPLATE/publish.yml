@@ -8,9 +8,9 @@ body:
       value: |
         AIAgentLayer opens this issue for you when you publish from the app. Use this form only to publish by hand.
 
-        Paste one submission object below (the format is in PUBLISHING.md). Keep the title starting with `[publish]`.
-        You do not need `publisher` or `publisher_id`: the GitHub account that opens this issue is the publisher,
-        and anything else in those fields is replaced.
+        Paste one submission object below and keep the title starting with `[publish]`.
+        A maintainer reviews it and publishes it by hand; nothing is published automatically.
+        The GitHub account that opens this issue is recorded as the publisher.
 
         Never paste API keys, tokens or passwords. Credentials in an MCP config must be placeholders.
   - type: textarea

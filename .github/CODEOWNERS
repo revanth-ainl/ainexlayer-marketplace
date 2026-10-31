@@ -1,13 +1,2 @@
-# Changes to the registry's code, rules and trust list need a maintainer.
-# Submissions are deliberately not listed: the auto-merge gate decides those,
-# and a code-owner requirement on them would block every automated merge.
-# Enable "Require review from Code Owners" in the main branch protection.
-
-/.github/                 @revanth-ainl
-/scripts/                 @revanth-ainl
-/schemas/                 @revanth-ainl
-/tests/                   @revanth-ainl
-/trusted-publishers.json  @revanth-ainl
-/requirements-*.txt       @revanth-ainl
-/requirements-*.in        @revanth-ainl
-/LICENSE                  @revanth-ainl
+# Every change to the registry is reviewed by a maintainer.
+*  @revanth-ainl
