@@ -127,6 +127,13 @@ class ExpandTest(unittest.TestCase):
         )
         self.assertEqual(entry["description"], "When to use it.")
 
+    def test_submitted_description_is_still_checked(self) -> None:
+        obj = fixture("skill-portable.json")
+        obj["description"] = "x" * (rules.MAX_DESCRIPTION_CHARS + 1)
+        code, _, err = self.write(obj)
+        self.assertEqual(code, 1)
+        self.assertIn("description", err)
+
     def test_issue_body_is_read_as_data(self) -> None:
         obj = fixture("plugin-stdio.json")
         body = f"{rules.INTAKE_BODY_MARKER}\n\nSubmitted from AIAgentLayer.\n\n```json\n{json.dumps(obj)}\n```\n"

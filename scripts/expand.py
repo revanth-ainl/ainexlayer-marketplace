@@ -157,6 +157,24 @@ def normalize(obj: dict[str, Any]) -> tuple[dict[str, Any], list[FieldError]]:
     return doc, notes
 
 
+def check_submission(obj: Any) -> tuple[dict[str, Any], list[FieldError], list[FieldError]]:
+    """``(stored document, notes, problems)`` for one submission.
+
+    The stored document is checked, and so is the description as submitted:
+    the listing shows the frontmatter description, but a submission whose own
+    description breaks the rules is refused, as AIAgentLayer refuses it.
+    """
+    if not isinstance(obj, dict):
+        return {}, [], [FieldError("a submission is a JSON object", None)]
+    doc, notes = normalize(obj)
+    problems = submission.validate(doc)
+    if doc.get("kind") == "skill" and doc.get("description") != obj.get("description"):
+        seen = {(p.message, p.field) for p in problems}
+        as_sent = submission.validate({**doc, "description": obj.get("description")})
+        problems += [p for p in as_sent if p.field == "description" and (p.message, p.field) not in seen]
+    return doc, notes, problems
+
+
 # ---------------------------------------------------------------------------
 # Files
 # ---------------------------------------------------------------------------
@@ -267,8 +285,7 @@ def plan(
     root = Path(root)
     if not isinstance(obj, dict):
         raise ExpandError([FieldError("a submission is a JSON object", None)])
-    doc, notes = normalize(obj)
-    problems = submission.validate(doc)
+    doc, notes, problems = check_submission(obj)
     if any(p.is_error for p in problems):
         raise ExpandError(problems)
     notes.extend(problems)
