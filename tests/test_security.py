@@ -11,8 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ainexlayer_marketplace import security  # noqa: E402
-from ainexlayer_marketplace.rules import MAX_PACKAGE_FILE_BYTES  # noqa: E402
+from ainexlayer_marketplace import security
+from ainexlayer_marketplace.rules import MAX_PACKAGE_FILE_BYTES
 
 # Built from pieces so this file itself never matches a secret scanner.
 FAKE_TOKENS = {

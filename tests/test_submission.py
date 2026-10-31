@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ainexlayer_marketplace import rules, submission  # noqa: E402
+from ainexlayer_marketplace import rules, submission
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "submissions"
 FIXTURE_NAMES = ("skill-portable.json", "plugin-http.json", "plugin-stdio.json", "agent-template.json")
@@ -216,7 +216,7 @@ class FrontmatterTest(unittest.TestCase):
     def test_parse(self) -> None:
         text = (
             "---\nname: a\ndescription: >\n  folded\n  text\nflavor: 'portable'\n"
-            "compatible_agents:\n  - Claude Code\n  - Cursor\ncategories: [x, \"y\"]\n---\nbody\n"
+            'compatible_agents:\n  - Claude Code\n  - Cursor\ncategories: [x, "y"]\n---\nbody\n'
         )
         meta = submission.parse_frontmatter(text)
         self.assertEqual(meta["description"], "folded text")

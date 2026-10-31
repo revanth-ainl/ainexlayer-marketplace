@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ainexlayer_marketplace import rules  # noqa: E402
+from ainexlayer_marketplace import rules
 
 
 class RulesTest(unittest.TestCase):

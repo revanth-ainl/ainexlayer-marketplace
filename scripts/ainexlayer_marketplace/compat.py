@@ -10,7 +10,8 @@ wrong.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Callable
 
 from .rules import (
     AGENT_FORBIDDEN_KEYS,
@@ -69,7 +70,7 @@ from .rules import (
 # ---------------------------------------------------------------------------
 
 
-def extension_of(plugin_json: Any) -> Tuple[Optional[Mapping[str, Any]], List[FieldError]]:
+def extension_of(plugin_json: Any) -> tuple[Mapping[str, Any] | None, list[FieldError]]:
     """The plugin's AIAgentLayer block, read under any of the app's namespaces.
 
     A manifest carrying the block under several namespaces must carry the
@@ -90,7 +91,7 @@ def extension_of(plugin_json: Any) -> Tuple[Optional[Mapping[str, Any]], List[Fi
     return block, []
 
 
-def _http_urls(value: Any, where: str) -> List[FieldError]:
+def _http_urls(value: Any, where: str) -> list[FieldError]:
     if isinstance(value, str):
         if value.lstrip().lower().startswith("http://"):
             return [FieldError(f"{where} uses a non-https URL: {value!r}", "plugin_json")]
@@ -102,18 +103,20 @@ def _http_urls(value: Any, where: str) -> List[FieldError]:
     return []
 
 
-def check_plugin_manifest(plugin_json: Any, *, expected_name: Optional[str] = None) -> List[FieldError]:
+def check_plugin_manifest(plugin_json: Any, *, expected_name: str | None = None) -> list[FieldError]:
     """Everything the app's ``convert_manifest`` would refuse in a plugin.json."""
     if not isinstance(plugin_json, Mapping):
         return [FieldError("plugin_json must be a JSON object", "plugin_json")]
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     name = plugin_json.get("name")
     if not is_valid_name(name):
         errors.append(
             FieldError("plugin_json.name must follow the package name rules (a-z 0-9 - ., 1-64 chars)", "plugin_json")
         )
     elif expected_name is not None and name != expected_name:
-        errors.append(FieldError(f"plugin_json.name {name!r} must equal the package name {expected_name!r}", "plugin_json"))
+        errors.append(
+            FieldError(f"plugin_json.name {name!r} must equal the package name {expected_name!r}", "plugin_json")
+        )
     version = plugin_json.get("version")
     if version is not None and not is_semver(version):
         errors.append(FieldError("plugin_json.version must be plain SemVer, e.g. 1.0.0", "plugin_json"))
@@ -121,7 +124,9 @@ def check_plugin_manifest(plugin_json: Any, *, expected_name: Optional[str] = No
     if not isinstance(description, str) or not description.strip():
         errors.append(FieldError("plugin_json.description is required", "plugin_json"))
     elif utf16_len(description) > MAX_DESCRIPTION_CHARS:
-        errors.append(FieldError(f"plugin_json.description is longer than {MAX_DESCRIPTION_CHARS} characters", "plugin_json"))
+        errors.append(
+            FieldError(f"plugin_json.description is longer than {MAX_DESCRIPTION_CHARS} characters", "plugin_json")
+        )
 
     extension, ext_errors = extension_of(plugin_json)
     errors.extend(ext_errors)
@@ -139,7 +144,9 @@ def check_plugin_manifest(plugin_json: Any, *, expected_name: Optional[str] = No
         errors.append(FieldError("community plugins cannot bind a native_tool (that needs app code)", "plugin_json"))
     auth = extension.get("auth")
     if not isinstance(auth, Mapping):
-        errors.append(FieldError(f"the extension block needs an auth object (mode one of {sorted(AUTH_MODES)})", "plugin_json"))
+        errors.append(
+            FieldError(f"the extension block needs an auth object (mode one of {sorted(AUTH_MODES)})", "plugin_json")
+        )
     else:
         if auth.get("mode") not in AUTH_MODES:
             errors.append(FieldError(f"auth.mode must be one of {sorted(AUTH_MODES)}", "plugin_json"))
@@ -153,7 +160,9 @@ def check_plugin_manifest(plugin_json: Any, *, expected_name: Optional[str] = No
                 errors.append(FieldError("fallback_auth must use mode 'pat_paste'", "plugin_json"))
             errors.extend(_http_urls(fallback, "fallback_auth"))
             if isinstance(auth, Mapping) and auth.get("mode") == "pat_paste":
-                errors.append(FieldError("fallback_auth is redundant when auth.mode is already pat_paste", "plugin_json"))
+                errors.append(
+                    FieldError("fallback_auth is redundant when auth.mode is already pat_paste", "plugin_json")
+                )
     logo_url = extension.get("logo_url")
     if logo_url is not None:
         if not isinstance(logo_url, str) or not logo_url.strip():
@@ -166,7 +175,7 @@ def check_plugin_manifest(plugin_json: Any, *, expected_name: Optional[str] = No
     return errors
 
 
-def _check_header_template(template: Any) -> List[FieldError]:
+def _check_header_template(template: Any) -> list[FieldError]:
     if not isinstance(template, str) or not template.strip():
         return [FieldError("mcp_auth_header_template must be a non-empty string", "plugin_json")]
     if not HEADER_PLACEHOLDER_RE.search(template):
@@ -181,7 +190,7 @@ def _check_header_template(template: Any) -> List[FieldError]:
 # ---------------------------------------------------------------------------
 
 
-def check_mcp(mcp: Any, plugin_json: Any = None) -> List[FieldError]:
+def check_mcp(mcp: Any, plugin_json: Any = None) -> list[FieldError]:
     """An mcp.json: exactly one server, which the app would install.
 
     Streamable HTTP servers must be https with no static headers. Stdio
@@ -206,15 +215,19 @@ def check_mcp(mcp: Any, plugin_json: Any = None) -> List[FieldError]:
     if kind == "stdio":
         return _check_stdio_server(name, server)
     if kind in DEPRECATED_TRANSPORTS:
-        return [FieldError("the deprecated 'sse' transport is not accepted; publish a streamable-http endpoint", "mcp_json")]
-    return [FieldError(f"mcp server {name!r} must declare type 'streamable-http' or 'stdio' (got {kind!r})", "mcp_json")]
+        return [
+            FieldError("the deprecated 'sse' transport is not accepted; publish a streamable-http endpoint", "mcp_json")
+        ]
+    return [
+        FieldError(f"mcp server {name!r} must declare type 'streamable-http' or 'stdio' (got {kind!r})", "mcp_json")
+    ]
 
 
-def _check_http_server(name: str, server: Mapping[str, Any]) -> List[FieldError]:
+def _check_http_server(name: str, server: Mapping[str, Any]) -> list[FieldError]:
     url = server.get("url")
     if not isinstance(url, str) or not url.strip():
         return [FieldError(f"mcp server {name!r}: url is required", "mcp_json")]
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     if not url.strip().lower().startswith("https://"):
         errors.append(FieldError(f"mcp server {name!r}: url must be https:// (got {url!r})", "mcp_json"))
     if server.get("headers"):
@@ -228,14 +241,13 @@ def _check_http_server(name: str, server: Mapping[str, Any]) -> List[FieldError]
     return errors
 
 
-def _check_stdio_server(name: str, server: Mapping[str, Any]) -> List[FieldError]:
+def _check_stdio_server(name: str, server: Mapping[str, Any]) -> list[FieldError]:
     command = server.get("command")
     if not isinstance(command, str) or not command.strip():
         return [FieldError(f"mcp server {name!r}: command is required", "mcp_json")]
     launcher = command.strip().replace("\\", "/").rsplit("/", 1)[-1].lower()
     for suffix in (".exe", ".cmd"):
-        if launcher.endswith(suffix):
-            launcher = launcher[: -len(suffix)]
+        launcher = launcher.removesuffix(suffix)
     if launcher not in STDIO_LAUNCHERS:
         return [
             FieldError(
@@ -243,7 +255,7 @@ def _check_stdio_server(name: str, server: Mapping[str, Any]) -> List[FieldError
                 "mcp_json",
             )
         ]
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     if server.get("url"):
         errors.append(FieldError(f"mcp server {name!r}: a stdio server may not also declare a url", "mcp_json"))
     args = server.get("args", [])
@@ -279,7 +291,7 @@ def _check_stdio_server(name: str, server: Mapping[str, Any]) -> List[FieldError
     return errors
 
 
-def _stdio_args_problem(launcher: str, args: List[str]) -> Optional[str]:
+def _stdio_args_problem(launcher: str, args: list[str]) -> str | None:
     """What is wrong with the launcher half of a stdio argv, or ``None``.
 
     Everything up to and including the package belongs to the launcher and
@@ -355,7 +367,7 @@ def _stdio_args_problem(launcher: str, args: List[str]) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 
-def _avatar_problem(avatar: Any) -> Optional[str]:
+def _avatar_problem(avatar: Any) -> str | None:
     """The app keeps only catalog ids and colours in an avatar; a recipe
     carrying anything else is refused rather than silently trimmed."""
     if not isinstance(avatar, Mapping):
@@ -392,7 +404,7 @@ def _avatar_problem(avatar: Any) -> Optional[str]:
     return None
 
 
-def check_agent_template(agent: Any, listing: Optional[Mapping[str, Any]] = None) -> List[FieldError]:
+def check_agent_template(agent: Any, listing: Mapping[str, Any] | None = None) -> list[FieldError]:
     """Everything the app's ``validate_template`` would refuse.
 
     ``listing`` is the store card (``description`` at least); its summary
@@ -401,8 +413,8 @@ def check_agent_template(agent: Any, listing: Optional[Mapping[str, Any]] = None
     """
     if not isinstance(agent, Mapping):
         return [FieldError("agent must be a JSON object (the template)", "agent")]
-    errors: List[FieldError] = []
-    add: Callable[[str], None] = lambda message: errors.append(FieldError(message, "agent"))  # noqa: E731
+    errors: list[FieldError] = []
+    add: Callable[[str], None] = lambda message: errors.append(FieldError(message, "agent"))
 
     for key in agent:
         if key in AGENT_FORBIDDEN_KEYS:

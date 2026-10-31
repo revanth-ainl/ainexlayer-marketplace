@@ -15,8 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-import validate  # noqa: E402
-from ainexlayer_marketplace import rules  # noqa: E402
+import validate
+from ainexlayer_marketplace import rules
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "submissions"
 

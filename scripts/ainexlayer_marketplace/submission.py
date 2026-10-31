@@ -22,8 +22,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any
 
 from . import compat, security
 from .rules import (
@@ -54,8 +55,7 @@ MAX_CATEGORY_CHARS = 40
 #: accepted only to be reported as ignored.
 _COMMON_KEYS = frozenset({"kind", "name", "version", "publisher", "publisher_id"})
 ALLOWED_KEYS = {
-    "skill": _COMMON_KEYS
-    | {"title", "description", "categories", "skill_md", "flavor", "compatible_agents"},
+    "skill": _COMMON_KEYS | {"title", "description", "categories", "skill_md", "flavor", "compatible_agents"},
     "plugin": _COMMON_KEYS | {"plugin_json", "mcp_json", "usage_card", "skills"},
     "agent": _COMMON_KEYS | {"title", "description", "categories", "agent"},
 }
@@ -95,14 +95,14 @@ def _scalar(text: str) -> str:
     return text
 
 
-def parse_frontmatter(skill_md: str) -> Dict[str, Any]:
+def parse_frontmatter(skill_md: str) -> dict[str, Any]:
     """Top-level frontmatter values: plain scalars, inline ``[a, b]`` lists,
     ``- item`` block lists and folded ``>`` / ``|`` text. Enough for the
     listing fields; not a general YAML parser."""
-    out: Dict[str, Any] = {}
-    key: Optional[str] = None
+    out: dict[str, Any] = {}
+    key: str | None = None
     mode = ""
-    buffer: List[str] = []
+    buffer: list[str] = []
 
     def flush() -> None:
         if key is None:
@@ -144,7 +144,7 @@ def parse_frontmatter(skill_md: str) -> Dict[str, Any]:
     return out
 
 
-def check_skill_md(name: str, skill_md: Any, *, field: str, plugin_name: Optional[str] = None) -> List[FieldError]:
+def check_skill_md(name: str, skill_md: Any, *, field: str, plugin_name: str | None = None) -> list[FieldError]:
     """One SKILL.md, as the app checks it before installing it.
 
     The frontmatter must open the file, declare ``name`` and ``description``
@@ -154,7 +154,7 @@ def check_skill_md(name: str, skill_md: Any, *, field: str, plugin_name: Optiona
     if not isinstance(skill_md, str) or not skill_md.strip():
         return [FieldError(f"skill {name!r}: SKILL.md is empty", field)]
     text = skill_md.lstrip()
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     if len(text.encode("utf-8")) > MAX_SKILL_MD_BYTES:
         errors.append(FieldError(f"skill {name!r}: SKILL.md is larger than {MAX_SKILL_MD_BYTES // 1024} KB", field))
     block = frontmatter_block(text)
@@ -176,16 +176,20 @@ def check_skill_md(name: str, skill_md: Any, *, field: str, plugin_name: Optiona
     meta = parse_frontmatter(text)
     declared_name = meta.get("name")
     if isinstance(declared_name, str) and declared_name and declared_name != name:
-        errors.append(FieldError(f"skill {name!r}: frontmatter name is {declared_name!r}; it must equal {name!r}", field))
+        errors.append(
+            FieldError(f"skill {name!r}: frontmatter name is {declared_name!r}; it must equal {name!r}", field)
+        )
     description = meta.get("description")
     if isinstance(description, str) and utf16_len(description) > MAX_DESCRIPTION_CHARS:
-        errors.append(FieldError(f"skill {name!r}: description is longer than {MAX_DESCRIPTION_CHARS} characters", field))
+        errors.append(
+            FieldError(f"skill {name!r}: description is longer than {MAX_DESCRIPTION_CHARS} characters", field)
+        )
     errors.extend(_listing_meta_errors(meta, field))
     return errors
 
 
-def _listing_meta_errors(meta: Mapping[str, Any], field: str) -> List[FieldError]:
-    errors: List[FieldError] = []
+def _listing_meta_errors(meta: Mapping[str, Any], field: str) -> list[FieldError]:
+    errors: list[FieldError] = []
     flavor = meta.get("flavor")
     if flavor is not None and (not isinstance(flavor, str) or flavor.strip().lower() not in SKILL_FLAVORS):
         errors.append(FieldError(f"flavor must be one of {', '.join(SKILL_FLAVORS)}", field))
@@ -199,7 +203,9 @@ def _listing_meta_errors(meta: Mapping[str, Any], field: str) -> List[FieldError
             long = [a for a in agents if len(" ".join(a.split())) > MAX_COMPATIBLE_AGENT_CHARS]
             if long:
                 errors.append(
-                    FieldError(f"compatible_agents entries must be at most {MAX_COMPATIBLE_AGENT_CHARS} characters", field)
+                    FieldError(
+                        f"compatible_agents entries must be at most {MAX_COMPATIBLE_AGENT_CHARS} characters", field
+                    )
                 )
     version = meta.get("version")
     if version is not None and not is_semver(version):
@@ -208,12 +214,12 @@ def _listing_meta_errors(meta: Mapping[str, Any], field: str) -> List[FieldError
     return errors
 
 
-def _category_errors(categories: Any, field: str = "categories") -> List[FieldError]:
+def _category_errors(categories: Any, field: str = "categories") -> list[FieldError]:
     if categories is None:
         return []
     if not isinstance(categories, list) or not all(isinstance(c, str) and c.strip() for c in categories):
         return [FieldError("categories must be a list of words", field)]
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     if len(categories) > MAX_CATEGORIES:
         errors.append(FieldError(f"at most {MAX_CATEGORIES} categories", field))
     if any(len(c) > MAX_CATEGORY_CHARS for c in categories):
@@ -221,7 +227,7 @@ def _category_errors(categories: Any, field: str = "categories") -> List[FieldEr
     return errors
 
 
-def check_bundled_skills(raw: Any, *, plugin_name: str) -> List[FieldError]:
+def check_bundled_skills(raw: Any, *, plugin_name: str) -> list[FieldError]:
     """A plugin's ``skills: [{name, skill_md}]`` block."""
     if raw is None:
         return []
@@ -229,8 +235,8 @@ def check_bundled_skills(raw: Any, *, plugin_name: str) -> List[FieldError]:
         return [FieldError("skills must be a list of {name, skill_md}", "skills")]
     if len(raw) > MAX_BUNDLED_SKILLS:
         return [FieldError(f"a plugin may bundle at most {MAX_BUNDLED_SKILLS} skills", "skills")]
-    errors: List[FieldError] = []
-    seen: List[str] = []
+    errors: list[FieldError] = []
+    seen: list[str] = []
     for item in raw:
         if not isinstance(item, Mapping):
             errors.append(FieldError("each bundled skill must be an object {name, skill_md}", "skills"))
@@ -249,7 +255,9 @@ def check_bundled_skills(raw: Any, *, plugin_name: str) -> List[FieldError]:
         errors.extend(check_skill_md(name, item.get("skill_md"), field="skills", plugin_name=plugin_name))
     if plugin_name in seen and len(seen) > 1:
         errors.append(
-            FieldError(f"a bundled skill may be named {plugin_name!r} only when it is the plugin's only skill", "skills")
+            FieldError(
+                f"a bundled skill may be named {plugin_name!r} only when it is the plugin's only skill", "skills"
+            )
         )
     return errors
 
@@ -281,12 +289,11 @@ def extract_submission(text: str) -> Any:
     except json.JSONDecodeError as exc:
         raise ValueError(f"the submission is not valid JSON ({exc})") from exc
     if not isinstance(obj, dict):
-        raise ValueError("the submission must be a JSON object")
+        raise ValueError("the submission must be a JSON object")  # noqa: TRY004 - callers handle ValueError for every bad submission
     return obj
 
 
-
-def validate(obj: Any) -> List[FieldError]:
+def validate(obj: Any) -> list[FieldError]:
     """Every problem with one submission. An empty list means it passes.
 
     Warnings (``severity == "warning"``) are included; they do not refuse
@@ -297,7 +304,7 @@ def validate(obj: Any) -> List[FieldError]:
     kind = obj.get("kind")
     if kind not in ALLOWED_KEYS:
         return [FieldError('kind must be "plugin", "skill" or "agent"', "kind")]
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     for key in obj:
         if key not in ALLOWED_KEYS[kind]:
             errors.append(FieldError(f"{key!r} is not a {kind} submission field", key))
@@ -307,7 +314,9 @@ def validate(obj: Any) -> List[FieldError]:
 
     name = obj.get("name")
     if not is_valid_name(name):
-        errors.append(FieldError("name must be 1-64 chars of a-z 0-9 - . (no leading/trailing separators, no .. or --)", "name"))
+        errors.append(
+            FieldError("name must be 1-64 chars of a-z 0-9 - . (no leading/trailing separators, no .. or --)", "name")
+        )
         name = None
     else:
         reason = reserved_reason(kind, name)
@@ -330,8 +339,8 @@ def validate(obj: Any) -> List[FieldError]:
     return errors
 
 
-def _title_and_description(obj: Mapping[str, Any], kind: str) -> List[FieldError]:
-    errors: List[FieldError] = []
+def _title_and_description(obj: Mapping[str, Any], kind: str) -> list[FieldError]:
+    errors: list[FieldError] = []
     title = obj.get("title")
     if not isinstance(title, str) or not title.strip():
         errors.append(FieldError(f"title is required for a {kind}", "title"))
@@ -346,7 +355,7 @@ def _title_and_description(obj: Mapping[str, Any], kind: str) -> List[FieldError
     return errors
 
 
-def _check_skill(obj: Mapping[str, Any], name: Optional[str]) -> List[FieldError]:
+def _check_skill(obj: Mapping[str, Any], name: str | None) -> list[FieldError]:
     errors = _title_and_description(obj, "skill")
     errors.extend(_listing_meta_errors({k: obj[k] for k in ("flavor", "compatible_agents") if k in obj}, "skill_md"))
     skill_md = obj.get("skill_md")
@@ -358,12 +367,14 @@ def _check_skill(obj: Mapping[str, Any], name: Optional[str]) -> List[FieldError
         fm_version = meta.get("version")
         if isinstance(fm_version, str) and is_semver(obj.get("version")) and fm_version != obj["version"]:
             errors.append(
-                FieldError(f"frontmatter version {fm_version} differs from the submission version {obj['version']}", "skill_md")
+                FieldError(
+                    f"frontmatter version {fm_version} differs from the submission version {obj['version']}", "skill_md"
+                )
             )
     return errors
 
 
-def _check_plugin(obj: Mapping[str, Any], name: Optional[str]) -> List[FieldError]:
+def _check_plugin(obj: Mapping[str, Any], name: str | None) -> list[FieldError]:
     plugin_json = obj.get("plugin_json")
     errors = compat.check_plugin_manifest(plugin_json, expected_name=name)
     if isinstance(plugin_json, Mapping):
@@ -386,7 +397,7 @@ def _check_plugin(obj: Mapping[str, Any], name: Optional[str]) -> List[FieldErro
     return errors
 
 
-def _check_agent(obj: Mapping[str, Any]) -> List[FieldError]:
+def _check_agent(obj: Mapping[str, Any]) -> list[FieldError]:
     errors = _title_and_description(obj, "agent")
     # The app checks the summary length together with the template; the
     # description errors above already cover it, so pass no listing here.
@@ -416,7 +427,7 @@ def _title_from_name(name: str) -> str:
     return name.replace("-", " ").title()
 
 
-def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
+def from_tree(root: Path, kind: str, name: str) -> dict[str, Any]:
     """Read ``<kind dir>/<name>/`` back into a submission object.
 
     Raises :class:`PackageLayoutError` when a required file is missing or
@@ -436,7 +447,7 @@ def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
             raise PackageLayoutError("missing SKILL.md")
         skill_md = (folder / "SKILL.md").read_text(encoding="utf-8")
         meta = parse_frontmatter(skill_md.lstrip())
-        doc: Dict[str, Any] = {
+        doc: dict[str, Any] = {
             "kind": "skill",
             "name": name,
             "version": meta.get("version", "1.0.0"),
@@ -452,9 +463,7 @@ def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
 
     if kind == "plugin":
         allowed = {"plugin.json", "mcp.json", *USAGE_CARD_PATHS}
-        unexpected = [
-            f for f in files if f not in allowed and not re.fullmatch(r"skills/[^/]+/SKILL\.md", f)
-        ]
+        unexpected = [f for f in files if f not in allowed and not re.fullmatch(r"skills/[^/]+/SKILL\.md", f)]
         if unexpected:
             raise PackageLayoutError(f"unexpected files in a plugin folder: {', '.join(unexpected)}")
         if "plugin.json" not in files:
@@ -484,7 +493,9 @@ def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
     if kind == "agent":
         unexpected = [f for f in files if f not in ("agent.json", "listing.json")]
         if unexpected:
-            raise PackageLayoutError(f"an agent folder holds only agent.json and listing.json (found {', '.join(unexpected)})")
+            raise PackageLayoutError(
+                f"an agent folder holds only agent.json and listing.json (found {', '.join(unexpected)})"
+            )
         for required in ("agent.json", "listing.json"):
             if required not in files:
                 raise PackageLayoutError(f"missing {required}")
@@ -493,7 +504,9 @@ def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
             raise PackageLayoutError("listing.json must be an object")
         extra = sorted(set(listing) - {"version", "title", "description", "categories"})
         if extra:
-            raise PackageLayoutError(f"listing.json may hold only version, title, description, categories (found {extra})")
+            raise PackageLayoutError(
+                f"listing.json may hold only version, title, description, categories (found {extra})"
+            )
         return {
             "kind": "agent",
             "name": name,
@@ -507,7 +520,7 @@ def from_tree(root: Path, kind: str, name: str) -> Dict[str, Any]:
     raise PackageLayoutError(f"unknown kind {kind!r}")
 
 
-def check_package(root: Path, kind: str, name: str) -> List[FieldError]:
+def check_package(root: Path, kind: str, name: str) -> list[FieldError]:
     """Folder safety, layout and every submission rule for one package."""
     where = f"{_KIND_DIRS[kind]}/{name}"
     if not is_valid_name(name):

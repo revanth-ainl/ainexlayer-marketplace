@@ -8,8 +8,8 @@ its JSON is parsed.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
 
 from .rules import (
     AGENT_SECRET_PATTERNS,
@@ -27,7 +27,7 @@ from .rules import (
 ALLOWED_SUFFIXES = frozenset({".json", ".md"})
 
 
-def scan_text(text: str, where: str, *, strict: bool = False) -> List[FieldError]:
+def scan_text(text: str, where: str, *, strict: bool = False) -> list[FieldError]:
     """Credentials in ``text``.
 
     The app's eight token families are always an error. The generic
@@ -45,7 +45,9 @@ def scan_text(text: str, where: str, *, strict: bool = False) -> List[FieldError
                 )
             ]
     if not strict and GENERIC_SECRET_RE.search(HEADER_PLACEHOLDER_RE.sub("", text)):
-        return [warning(f"{where} has something shaped like 'key = value'; make sure it is not a real credential", where)]
+        return [
+            warning(f"{where} has something shaped like 'key = value'; make sure it is not a real credential", where)
+        ]
     return []
 
 
@@ -57,7 +59,7 @@ def is_safe_relpath(rel: str) -> bool:
     return all(part not in ("", ".", "..") and not part.startswith(".") for part in rel.split("/"))
 
 
-def safe_join(root: Path, rel: str) -> Optional[Path]:
+def safe_join(root: Path, rel: str) -> Path | None:
     """``root / rel`` when ``rel`` is safe and stays inside ``root``, else ``None``.
 
     For anything that writes package files from submitted data.
@@ -87,10 +89,10 @@ def _walk(directory: Path) -> Iterable[Path]:
 def check_tree(
     directory: Path,
     *,
-    where: Optional[str] = None,
+    where: str | None = None,
     allowed_suffixes: Sequence[str] = tuple(ALLOWED_SUFFIXES),
     max_bytes: int = MAX_PACKAGE_FILE_BYTES,
-) -> List[FieldError]:
+) -> list[FieldError]:
     """Everything wrong with the files of one package folder.
 
     Refuses symlinks (a link to ``~/.ssh`` would be read as package
@@ -99,7 +101,7 @@ def check_tree(
     UTF-8. Content is scanned for credentials.
     """
     label = where or directory.name
-    errors: List[FieldError] = []
+    errors: list[FieldError] = []
     if directory.is_symlink():
         return [FieldError(f"{label} is a symlink; packages must be plain folders", label)]
     if not directory.is_dir():

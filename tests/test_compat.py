@@ -12,7 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ainexlayer_marketplace import compat  # noqa: E402
+
+from ainexlayer_marketplace import compat
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "submissions"
 
@@ -21,7 +22,7 @@ def fixture(name: str) -> dict:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-def stdio(command: str, args: list, env: dict = None) -> dict:
+def stdio(command: str, args: list, env: dict | None = None) -> dict:
     server = {"type": "stdio", "command": command, "args": args}
     if env is not None:
         server["env"] = env
@@ -159,7 +160,7 @@ class PluginManifestTest(unittest.TestCase):
 
     def test_description_limit_counts_utf16(self) -> None:
         manifest = copy.deepcopy(self.manifest)
-        manifest["description"] = "\U0001F600" * 251  # 502 UTF-16 units
+        manifest["description"] = "\U0001f600" * 251  # 502 UTF-16 units
         self.assertTrue(any("longer than" in m for m in self.check(manifest)))
 
 

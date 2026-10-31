@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 #: The AIAgentLayer commit these rules were taken from.
 APP_SOURCE_COMMIT = "03f4afc847"
@@ -32,14 +31,14 @@ class FieldError:
     """
 
     message: str
-    field: Optional[str] = None
+    field: str | None = None
     severity: str = "error"
 
     @property
     def is_error(self) -> bool:
         return self.severity == "error"
 
-    def to_dict(self) -> Dict[str, Optional[str]]:
+    def to_dict(self) -> dict[str, str | None]:
         """The app's own shape (``publish.FieldError``): ``{"error", "field"}``."""
         return {"error": self.message, "field": self.field}
 
@@ -48,7 +47,7 @@ class FieldError:
         return f"{where}{self.message}"
 
 
-def warning(message: str, field: Optional[str] = None) -> FieldError:
+def warning(message: str, field: str | None = None) -> FieldError:
     return FieldError(message, field, "warning")
 
 
@@ -335,7 +334,7 @@ RESERVED_SKILL_NAMES = (
 )
 
 
-def reserved_reason(kind: str, name: str) -> Optional[str]:
+def reserved_reason(kind: str, name: str) -> str | None:
     """Why ``name`` may not be published as ``kind``, or ``None``."""
     if kind == "plugin" and name in RESERVED_PLUGIN_IDS:
         return f"{name!r} is a plugin AIAgentLayer ships itself"
