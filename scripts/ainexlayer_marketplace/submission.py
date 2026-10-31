@@ -258,6 +258,33 @@ def check_bundled_skills(raw: Any, *, plugin_name: str) -> List[FieldError]:
 # Submissions
 # ---------------------------------------------------------------------------
 
+_FENCED_JSON_RE = re.compile(r"^```json[ \t]*\r?\n(.*?)\r?\n```[ \t]*$", re.DOTALL | re.MULTILINE)
+
+
+def extract_submission(text: str) -> Any:
+    """The submission in ``text``: a bare JSON object, or the one fenced
+    ```` ```json ```` block of an issue body AIAgentLayer opened.
+
+    The text is only ever parsed as JSON, never run. Raises ``ValueError``
+    when there is not exactly one object to read.
+    """
+    stripped = text.strip()
+    if stripped.startswith("{"):
+        candidate = stripped
+    else:
+        blocks = _FENCED_JSON_RE.findall(text)
+        if len(blocks) != 1:
+            raise ValueError(f"expected exactly one ```json block, found {len(blocks)}")
+        candidate = blocks[0]
+    try:
+        obj = json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"the submission is not valid JSON ({exc})") from exc
+    if not isinstance(obj, dict):
+        raise ValueError("the submission must be a JSON object")
+    return obj
+
+
 
 def validate(obj: Any) -> List[FieldError]:
     """Every problem with one submission. An empty list means it passes.
