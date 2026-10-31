@@ -216,6 +216,13 @@ class ApplyClaimTest(unittest.TestCase):
         self.assertEqual(out["owners"]["managed"]["publisher_id"], OTHER_ID)
         self.assertEqual(out["owners"]["managed"]["version"], "1.1.0")
 
+    def test_refuses_a_name_of_another_kind_or_owner(self) -> None:
+        with self.assertRaises(ValueError):
+            registry.apply_claim(V2, "plugin", "hello-ainexlayer", "2.0.0", "revanth-ainl", OWNER_ID, claimed_at="x")
+        with self.assertRaises(ValueError):
+            registry.apply_claim(V2, "skill", "hello-ainexlayer", "2.0.0", "intruder", OTHER_ID, claimed_at="x")
+        self.assertEqual(V2["owners"]["hello-ainexlayer"]["kind"], "skill")
+
     def test_idempotent(self) -> None:
         once = registry.apply_claim(V2, "skill", "hello-ainexlayer", "1.3.0", "revanth-ainl", OWNER_ID, claimed_at="x")
         twice = registry.apply_claim(

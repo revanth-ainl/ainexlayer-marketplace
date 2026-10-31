@@ -329,15 +329,22 @@ def apply_claim(
 
     An existing owner keeps its ``claimed_at`` and ``maintainer_managed``
     and, unless a trusted maintainer is publishing for them, its login and
-    id; only the version moves. Call :func:`check_claim` first.
+    id; only the version moves. Call :func:`check_claim` first; as a second
+    line of defence this raises ``ValueError`` instead of handing a name to
+    another kind or to someone who is not its owner.
     """
     out = migrate(registry)
     owner = out["owners"].get(name)
-    if isinstance(owner, dict) and owner.get("kind") == kind:
+    if owner is not None and not (isinstance(owner, dict) and owner.get("kind") == kind):
+        existing = owner.get("kind") if isinstance(owner, dict) else "malformed entry"
+        raise ValueError(f"{name!r} is registered as a {existing}, not a {kind}")
+    if isinstance(owner, dict):
         stored_id = owner.get("publisher_id")
         is_owner = (is_publisher_id(stored_id) and stored_id == publisher_id) or (
             not is_publisher_id(stored_id) and str(owner.get("publisher", "")).lower() == publisher.lower()
         )
+        if not is_owner and owner.get("maintainer_managed") is not True:
+            raise ValueError(f"{name!r} belongs to {owner.get('publisher')!r}, not {publisher!r}")
         if is_owner:
             owner["publisher"] = publisher
             if publisher_id is not None:
