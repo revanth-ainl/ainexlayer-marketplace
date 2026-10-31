@@ -1,0 +1,689 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/plugin.schema.json",
+  "title": "Plugin manifest (plugin.json, Agent Plugins format with the AIAgentLayer extension block)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "extensions"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+      "not": {
+        "pattern": "--|\\.\\."
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "At most 500 UTF-16 code units (checked by the validator)."
+    },
+    "extensions": {
+      "type": "object",
+      "properties": {
+        "io.github.dodaios": {
+          "$ref": "#/$defs/extension"
+        },
+        "io.github.personaljarvis": {
+          "$ref": "#/$defs/extension"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "io.github.dodaios"
+          ]
+        },
+        {
+          "required": [
+            "io.github.personaljarvis"
+          ]
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "extension": {
+      "type": "object",
+      "required": [
+        "auth"
+      ],
+      "properties": {
+        "auth": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/auth_hosted_mcp_allowlist"
+            },
+            {
+              "$ref": "#/$defs/auth_hosted_mcp_oauth_dcr"
+            },
+            {
+              "$ref": "#/$defs/auth_hosted_mcp_open"
+            },
+            {
+              "$ref": "#/$defs/auth_instance_browser"
+            },
+            {
+              "$ref": "#/$defs/auth_local"
+            },
+            {
+              "$ref": "#/$defs/auth_oauth_device_flow"
+            },
+            {
+              "$ref": "#/$defs/auth_oauth_pkce_loopback"
+            },
+            {
+              "$ref": "#/$defs/auth_pat_paste"
+            }
+          ]
+        },
+        "fallback_auth": {
+          "$ref": "#/$defs/auth_pat_paste"
+        },
+        "native_tool": {
+          "enum": [
+            null,
+            false,
+            "",
+            0
+          ],
+          "description": "Community plugins cannot bind one."
+        },
+        "logo_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "mcp_auth_header_template": {
+          "type": "string",
+          "pattern": "\\$(?:plugin_[a-z0-9_.-]+|\\{plugin_[a-z0-9_.-]+\\})",
+          "description": "Must reference a $plugin_… placeholder and carry no literal token."
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "logo_slug": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "logo_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "longevity": {
+          "enum": [
+            "permanent",
+            "self_renewing",
+            "provider_limited",
+            null
+          ]
+        },
+        "longevity_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "oauth_client_family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "post_install_hint_md": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "auth_hosted_mcp_allowlist": {
+      "type": "object",
+      "required": [
+        "mode",
+        "mcp_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "hosted_mcp_allowlist"
+        },
+        "mcp_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "application_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_hosted_mcp_oauth_dcr": {
+      "type": "object",
+      "required": [
+        "mode",
+        "discovery_url",
+        "mcp_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "hosted_mcp_oauth_dcr"
+        },
+        "discovery_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "mcp_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "fallback_mcp_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "access_token_ttl_seconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refresh_supported": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capabilities": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scopes": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_hosted_mcp_open": {
+      "type": "object",
+      "required": [
+        "mode",
+        "mcp_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "hosted_mcp_open"
+        },
+        "mcp_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_instance_browser": {
+      "type": "object",
+      "required": [
+        "mode",
+        "instance_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "instance_browser"
+        },
+        "instance_url": {
+          "type": "object",
+          "required": [
+            "label",
+            "placeholder"
+          ],
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "placeholder": {
+              "type": "string"
+            },
+            "validation_path": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "help_md": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "protocol": {
+          "enum": [
+            "home_assistant",
+            null
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_local": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "const": "local"
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_oauth_device_flow": {
+      "type": "object",
+      "required": [
+        "mode",
+        "client_id",
+        "device_url",
+        "scopes",
+        "token_url",
+        "verify_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "oauth_device_flow"
+        },
+        "device_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "verify_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "token_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "access_token_ttl_seconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refresh_token_ttl_seconds": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_oauth_pkce_loopback": {
+      "type": "object",
+      "required": [
+        "mode",
+        "authorization_url",
+        "client_id",
+        "scopes",
+        "token_url"
+      ],
+      "properties": {
+        "mode": {
+          "const": "oauth_pkce_loopback"
+        },
+        "authorization_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "token_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "refresh_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revocation_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "callback_port": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "callback_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope_separator": {
+          "enum": [
+            "comma",
+            "space",
+            null
+          ]
+        },
+        "user_scopes_only": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refresh_supported": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refresh_token_ttl_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resource": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offline_access": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "client_auth_method": {
+          "enum": [
+            "client_secret_post",
+            "client_secret_basic",
+            null
+          ]
+        },
+        "use_pkce": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth_pat_paste": {
+      "type": "object",
+      "required": [
+        "mode",
+        "instruction_md",
+        "token_creation_url",
+        "token_prefix",
+        "validation_endpoint"
+      ],
+      "properties": {
+        "mode": {
+          "const": "pat_paste"
+        },
+        "token_creation_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "token_prefix": {
+          "type": "string"
+        },
+        "validation_endpoint": {
+          "type": "string"
+        },
+        "instruction_md": {
+          "type": "string"
+        },
+        "token_prefixes": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_method": {
+          "enum": [
+            "http_get",
+            "mcp_initialize",
+            null
+          ]
+        },
+        "instance_url": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": [
+                "label",
+                "placeholder"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "placeholder": {
+                  "type": "string"
+                },
+                "validation_path": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "help_md": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "auth_scheme": {
+          "enum": [
+            "bearer",
+            "bot",
+            "telegram_path",
+            "figma",
+            null
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

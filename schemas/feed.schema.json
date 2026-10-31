@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/feed.schema.json",
+  "title": "Marketplace feed (docs/index.json, read by AIAgentLayer's CommunityIndex)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "revision",
+    "generated_at",
+    "plugins",
+    "skills",
+    "agents"
+  ],
+  "properties": {
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "generated_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/plugin"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/skill"
+      }
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/agent"
+      }
+    }
+  },
+  "$defs": {
+    "skill": {
+      "type": "object",
+      "required": [
+        "name",
+        "title",
+        "description",
+        "publisher",
+        "version",
+        "published_at",
+        "categories",
+        "source_url",
+        "raw_url",
+        "flavor",
+        "compatible_agents",
+        "trust",
+        "content_sha256",
+        "raw_sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+          "not": {
+            "pattern": "--|\\.\\."
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "raw_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "flavor": {
+          "enum": [
+            "jarvis",
+            "portable"
+          ]
+        },
+        "compatible_agents": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Each name at most 32 characters once spaces are collapsed."
+        },
+        "raw_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "publisher": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+        },
+        "publisher_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trust": {
+          "enum": [
+            "official",
+            "community"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "published_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "source_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "required": [
+        "name",
+        "publisher",
+        "version",
+        "published_at",
+        "source_url",
+        "plugin_json",
+        "mcp_json",
+        "usage_card",
+        "trust",
+        "content_sha256",
+        "transport",
+        "bundled_skills"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+          "not": {
+            "pattern": "--|\\.\\."
+          }
+        },
+        "plugin_json": {
+          "$ref": "plugin.schema.json"
+        },
+        "mcp_json": {
+          "anyOf": [
+            {
+              "$ref": "mcp.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usage_card": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transport": {
+          "enum": [
+            "streamable-http",
+            "stdio",
+            null
+          ]
+        },
+        "bundled_skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "description",
+              "sha256"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+                "not": {
+                  "pattern": "--|\\.\\."
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        "publisher": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+        },
+        "publisher_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trust": {
+          "enum": [
+            "official",
+            "community"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "published_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "source_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "required": [
+        "name",
+        "title",
+        "description",
+        "publisher",
+        "version",
+        "published_at",
+        "categories",
+        "source_url",
+        "agent",
+        "trust",
+        "content_sha256",
+        "schema"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+          "not": {
+            "pattern": "--|\\.\\."
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "agent": {
+          "$ref": "agent-template.schema.json"
+        },
+        "schema": {
+          "const": 1
+        },
+        "publisher": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+        },
+        "publisher_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trust": {
+          "enum": [
+            "official",
+            "community"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "published_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "source_url": {
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "description": "The app tolerates fields it does not know, so entries are open to additions."
+}

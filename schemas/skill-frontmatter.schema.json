@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/skill-frontmatter.schema.json",
+  "title": "SKILL.md frontmatter (the YAML block between the opening --- lines)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "name",
+    "description"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+      "not": {
+        "pattern": "--|\\.\\."
+      }
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "At most 500 UTF-16 code units (checked by the validator)."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "categories": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40
+      }
+    },
+    "flavor": {
+      "enum": [
+        "jarvis",
+        "portable"
+      ]
+    },
+    "compatible_agents": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Each name at most 32 characters once spaces are collapsed."
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "risk_policy"
+        ]
+      }
+    ]
+  },
+  "description": "Missing flavor means 'portable' in this registry's feed. SKILL.md at most 65536 bytes."
+}

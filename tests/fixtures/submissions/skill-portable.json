@@ -1,0 +1,11 @@
+{
+  "kind": "skill",
+  "name": "meeting-recap",
+  "version": "1.0.0",
+  "title": "Meeting recap",
+  "description": "Turns rough meeting notes into decisions, owners and next steps.",
+  "categories": [
+    "productivity"
+  ],
+  "skill_md": "---\nname: meeting-recap\ndescription: Turns rough meeting notes into decisions, owners and next steps.\nflavor: portable\nversion: 1.0.0\ncompatible_agents: [Claude Code, Cursor]\n---\n\n# Meeting recap\n\nRead the notes the user pastes. Reply with three short lists: decisions,\nowners with their tasks, and open questions.\n"
+}

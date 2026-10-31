@@ -1,0 +1,45 @@
+{
+  "kind": "plugin",
+  "name": "error-tracker",
+  "version": "1.0.0",
+  "plugin_json": {
+    "name": "error-tracker",
+    "version": "1.0.0",
+    "description": "Look up recent errors and their stack traces from a hosted error tracker.",
+    "extensions": {
+      "io.github.dodaios": {
+        "display_name": "Error Tracker",
+        "category": "Developer",
+        "auth": {
+          "mode": "hosted_mcp_oauth_dcr",
+          "discovery_url": "https://mcp.example.com/.well-known/oauth-authorization-server",
+          "mcp_url": "https://mcp.example.com/mcp"
+        }
+      },
+      "io.github.personaljarvis": {
+        "display_name": "Error Tracker",
+        "category": "Developer",
+        "auth": {
+          "mode": "hosted_mcp_oauth_dcr",
+          "discovery_url": "https://mcp.example.com/.well-known/oauth-authorization-server",
+          "mcp_url": "https://mcp.example.com/mcp"
+        }
+      }
+    }
+  },
+  "mcp_json": {
+    "mcpServers": {
+      "error-tracker": {
+        "type": "streamable-http",
+        "url": "https://mcp.example.com/mcp"
+      }
+    }
+  },
+  "usage_card": "# Error Tracker\n\nAsk for the latest errors in a project.\n",
+  "skills": [
+    {
+      "name": "triage-errors",
+      "skill_md": "---\nname: triage-errors\ndescription: Group new errors by cause and suggest the first one to fix.\n---\n\n# Triage errors\n\nList the newest errors, group them by cause and pick one to fix first.\n"
+    }
+  ]
+}

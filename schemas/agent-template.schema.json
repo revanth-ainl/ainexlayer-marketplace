@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/agent-template.schema.json",
+  "title": "Agent template (agents/<name>/agent.json)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "schema",
+    "name",
+    "instructions"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[^/\\\\:@#<>\\\"'`\\x00-\\x1f]{1,40}$",
+      "description": "'Jarvis' is reserved (any case)."
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "instructions": {
+      "type": "string",
+      "minLength": 1,
+      "description": "At most 20000 UTF-8 bytes; no home-folder paths."
+    },
+    "tier": {
+      "enum": [
+        "specialist",
+        "orchestrator"
+      ]
+    },
+    "effort": {
+      "type": "string",
+      "pattern": "^[a-z]{0,16}$"
+    },
+    "grant_mode": {
+      "enum": [
+        "all",
+        "allowlist"
+      ]
+    },
+    "knowledge_scope": {
+      "enum": [
+        "shared",
+        "own"
+      ]
+    },
+    "focus": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+:[A-Za-z0-9_.:-]{1,80}$"
+      }
+    },
+    "grants": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+:[A-Za-z0-9_.:-]{1,80}$"
+      }
+    },
+    "denies": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+:[A-Za-z0-9_.:-]{1,80}$"
+      }
+    },
+    "require_approval": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+:[A-Za-z0-9_.:-]{1,80}$"
+      }
+    },
+    "skills": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "avatar": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "archetype",
+          "base",
+          "companion",
+          "contract",
+          "eyewear",
+          "hairStyle",
+          "heightM",
+          "inner",
+          "outfit",
+          "palette",
+          "parts",
+          "style"
+        ]
+      },
+      "properties": {
+        "companion": {
+          "propertyNames": {
+            "enum": [
+              "color",
+              "creature",
+              "enabled",
+              "eyes",
+              "followDistanceM",
+              "look",
+              "pet",
+              "shape",
+              "sizeM"
+            ]
+          }
+        },
+        "parts": {
+          "maxProperties": 32
+        },
+        "palette": {
+          "maxProperties": 32
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "description": "Fields an agent record has but a template may not carry: account_id, always_allow, approval_mode, approval_rules, browser_allowed_domains, browser_mode, computer_id, daily_budget_usd, max_concurrent_runs, model, parent_agent_id, permission_ceiling, provider, wiki_namespace, workspace_dir"
+}

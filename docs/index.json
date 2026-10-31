@@ -1,6 +1,6 @@
 {
-  "revision": 991113,
-  "generated_at": "2026-10-10T04:11:16Z",
+  "revision": 991114,
+  "generated_at": "2026-10-31T02:47:46Z",
   "plugins": [],
   "skills": [
     {
@@ -14,7 +14,11 @@
       "source_url": "https://github.com/revanth-ainl/ainexlayer-marketplace/tree/main/skills/hello-ainexlayer",
       "raw_url": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/skills/hello-ainexlayer/SKILL.md",
       "flavor": "portable",
-      "compatible_agents": []
+      "compatible_agents": [],
+      "publisher_id": 340421019,
+      "trust": "official",
+      "content_sha256": "e06d87c4867003026d29928dcf256a1caab2e25b0bd816e3097688258e994315",
+      "raw_sha256": "913e89320b0f343f71fbaad66ccd4a6020ef91877fdd6c67ab4137cd161b9d64"
     }
   ],
   "agents": []

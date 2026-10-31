@@ -1,0 +1,36 @@
+{
+  "kind": "plugin",
+  "name": "notes-index",
+  "version": "2.1.0",
+  "plugin_json": {
+    "name": "notes-index",
+    "version": "2.1.0",
+    "description": "Search a local notes index through a pinned MCP server.",
+    "extensions": {
+      "io.github.dodaios": {
+        "auth": {
+          "mode": "pat_paste",
+          "token_creation_url": "https://notes.example.com/settings/tokens",
+          "token_prefix": "nidx_",
+          "validation_endpoint": "https://api.notes.example.com/v1/me",
+          "instruction_md": "Create a read-only token under Settings, Tokens and paste it here."
+        }
+      }
+    }
+  },
+  "mcp_json": {
+    "mcpServers": {
+      "notes-index": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@example/notes-index-mcp@2.1.0"
+        ],
+        "env": {
+          "NOTES_TOKEN": "$plugin_notes-index_token"
+        }
+      }
+    }
+  }
+}

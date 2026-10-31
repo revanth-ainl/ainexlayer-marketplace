@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/revanth-ainl/ainexlayer-marketplace/main/schemas/registry.schema.json",
+  "title": "Package ownership (registry.json)",
+  "$comment": "Documentation; scripts/validate.py is the authority and checks more than a schema can.",
+  "type": "object",
+  "required": [
+    "version",
+    "owners"
+  ],
+  "properties": {
+    "version": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "owners": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$",
+        "not": {
+          "pattern": "--|\\.\\."
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "kind",
+          "publisher"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "plugin",
+              "skill",
+              "agent"
+            ]
+          },
+          "publisher": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+          },
+          "publisher_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "claimed_at": {
+            "type": "string"
+          },
+          "maintainer_managed": {
+            "type": "boolean"
+          }
+        },
+        "propertyNames": {
+          "enum": [
+            "claimed_at",
+            "kind",
+            "maintainer_managed",
+            "publisher",
+            "publisher_id",
+            "version"
+          ]
+        }
+      }
+    }
+  }
+}
